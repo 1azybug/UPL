@@ -17,10 +17,10 @@ def parse_args():
 def get_examples_list(instruction_dataset_repo, split):
     instruction_dataset_repo_name = instruction_dataset_repo.split('/')[-1]
     # cache long text for preventing full dataset traversal on each preparation.
-    if os.path.exists(f'{instruction_dataset_repo_name}_{split}_instruction_dataset.json'):
-        with open(f'{instruction_dataset_repo_name}_{split}_instruction_dataset.json', 'r', encoding='utf-8') as f:
-            examples_list =  json.load(f)
-        return examples_list
+    # if os.path.exists(f'{instruction_dataset_repo_name}_{split}_instruction_dataset.json'):
+    #     with open(f'{instruction_dataset_repo_name}_{split}_instruction_dataset.json', 'r', encoding='utf-8') as f:
+    #         examples_list =  json.load(f)
+    #     return examples_list
 
     dataset = load_dataset(instruction_dataset_repo, split=split, streaming=True)
 
@@ -92,13 +92,19 @@ def get_examples(model_id, instruction_dataset_repo="sggetao/PwC",hf_token=None,
     instruction_dataset_repo_name = instruction_dataset_repo.split('/')[-1]
     train_data_name = f"{instruction_dataset_repo_name}_train_"+model_name+f"_len{min_len}_instruction.pt"
     eval_data_name = f"{instruction_dataset_repo_name}_eval_"+model_name+f"_len{min_len}_instruction.pt"
-
+    # return torch.load(eval_data_name), torch.load(eval_data_name)
     print(f"in:train_data_name:{train_data_name}")
     if os.path.exists(train_data_name):
         print("loading data...")
         return torch.load(train_data_name), torch.load(eval_data_name)
     print(f"preparing data :train_data_name:{train_data_name}")
 
+    model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+    torch_dtype=torch.bfloat16,
+    device_map="cpu",
+    token=hf_token
+)
     tokenizer = AutoTokenizer.from_pretrained(model_id, token=hf_token)
     
     train_examples_list = get_examples_list(instruction_dataset_repo, split="train")

@@ -1,4 +1,7 @@
+import math
 from torch import nn
+import torch
+import torch.nn.functional as F
 class LinearLoraLayer(nn.Module):
     # No bias in LLama3 LinearLayer
     def __init__(self, in_features, out_features, r=16, weight=None):

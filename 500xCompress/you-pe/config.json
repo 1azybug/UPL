@@ -1,6 +1,6 @@
 {
     "training_config": {
-        "model_id": "../../../models/TinyLlama/TinyLlama_v1.1",
+        "model_id": "/mnt/zhaorunsong/models/TinyLlama/TinyLlama_v1.1",
         "segment_len": 510,
         "total_batch_size": 16,
         "batch_size_per_device": 1,
@@ -18,20 +18,18 @@
         "head_num": 5,
         "segment_num": 2,
         "task_type": "Compress",
-        "wo_ae": true,
-        "use_ae_loss": false,
+        "use_pe": true,
+        "use_ae_loss": true,
         "use_compress_loss": false,
-        "use_multi_lora": false,
-        "use_merge_lora": false,
         "use_lm_loss": true
     },
     "data_config": {
-        "dataset_repo": "../../../dataset/DKYoon/SlimPajama-6B",
+        "dataset_repo": "/mnt/zhaorunsong/dataset/DKYoon/SlimPajama-6B",
         "hf_token": "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",
         "token_num": 1000000000,
         "min_len": 510,
-        "model_id": "../../../models/TinyLlama/TinyLlama_v1.1",
-        "instruction_dataset_repo": "../../../dataset/bigData/mrqa-workshop_mrqa"
+        "model_id": "../../../../../models/TinyLlama/TinyLlama_v1.1",
+        "instruction_dataset_repo": "../../../../../dataset/bigData/mrqa-workshop_mrqa"
     },
     "Total_parameters": 1445459968,
     "Trainable_parameters": 345503744,

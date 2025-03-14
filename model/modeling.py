@@ -75,10 +75,10 @@ class CompressLLM(torch.nn.Module):
             ae_emb = torch.cat([compress_token, expand_ae_token, inputs_embeds[:, :-1, :]], dim=1)
             position_ids = torch.arange(1, inputs_embeds.size(1)+1, device=inputs_embeds.device).unsqueeze(0)
             ae_position_ids = torch.cat([compress_token_ids, position_ids - 1], dim=1)
-            if "wo_pe" in self.task_config:
-                outputs = self.decoder(inputs_embeds=ae_emb)
-            else:
+            if self.task_config["use_pe"]:
                 outputs = self.decoder(position_ids=ae_position_ids, inputs_embeds=ae_emb)
+            else:
+                outputs = self.decoder(inputs_embeds=ae_emb)
             # [B,mem_size+S,V] -> [B,S,V]
             logits = outputs.logits[:, compress_token.size(1):]
             inputs['ae_targets'] = inputs['input_ids'].contiguous().view(-1).to(logits.device)
@@ -96,10 +96,10 @@ class CompressLLM(torch.nn.Module):
             lm_emb = torch.cat([compress_token, expand_lm_token,lm_target_emb],dim=1)
             latter_position_ids = torch.arange(end_idx+1,end_idx+seq_len+2,device=lm_target_emb.device).unsqueeze(0)
             lm_position_ids = torch.cat([compress_token_ids,latter_position_ids-1],dim=1)
-            if "wo_pe" in self.task_config:
-                outputs = self.decoder(inputs_embeds=lm_emb)
-            else:
+            if self.task_config["use_pe"]:
                 outputs = self.decoder(inputs_embeds=lm_emb, position_ids=lm_position_ids)
+            else:
+                outputs = self.decoder(inputs_embeds=lm_emb)
             # [B,mem_size+S,V] -> [B,S,V]
             logits = outputs.logits[:,compress_token.size(1):]
             logits = logits[:, 1:]
@@ -157,11 +157,11 @@ class CompressLLM(torch.nn.Module):
                 compress_token_ids = torch.cat((compress_token_ids, mem_position_ids), dim=1)
 
             # make three masks：cl_mask、lm_mask、cl_prime_mask
-            if "wo_pe" in self.task_config:
-                outputs = self.model(inputs_embeds=encode_inputs_embeds, output_hidden_states=True)
-            else:
+            if self.task_config["use_pe"]:
                 outputs = self.model(position_ids=encode_position_ids, inputs_embeds=encode_inputs_embeds,
                                      output_hidden_states=True)
+            else:
+                outputs = self.model(inputs_embeds=encode_inputs_embeds, output_hidden_states=True)
 
             hidden_states = outputs.hidden_states[-1]
             # [B,mem_size,emb_size]
@@ -188,15 +188,15 @@ class CompressLLM(torch.nn.Module):
         next_inputs_embeds = lm_emb.clone()
         next_position_ids = lm_position_ids.clone()
         for i in range(1024):
-            if "wo_pe" in self.task_config:
-                out = self.decoder(inputs_embeds=next_inputs_embeds,
-                                 past_key_values=past_key_values,
-                                 use_cache=True)
-            else:
+            if self.task_config["use_pe"]:
                 out = self.decoder(position_ids=next_position_ids,
-                                 inputs_embeds=next_inputs_embeds,
-                                 past_key_values=past_key_values,
-                                 use_cache=True)
+                                   inputs_embeds=next_inputs_embeds,
+                                   past_key_values=past_key_values,
+                                   use_cache=True)
+            else:
+                out = self.decoder(inputs_embeds=next_inputs_embeds,
+                                   past_key_values=past_key_values,
+                                   use_cache=True)
             # [B,S,V] -> [B,V]
             logit = out.logits[:, -1]
             past_key_values = out.past_key_values
@@ -236,10 +236,10 @@ class CompressLLM(torch.nn.Module):
         next_position_ids = ae_position_ids.clone()
 
         for i in range(1024):
-            if "wo_pe" in self.task_config:
-                out = self.decoder(inputs_embeds=next_inputs_embeds, past_key_values=past_key_values, use_cache=True)
+            if self.task_config["use_pe"]:
+                out = self.decoder(position_ids=next_position_ids, inputs_embeds=next_inputs_embeds,past_key_values=past_key_values, use_cache=True)
             else:
-                out = self.decoder(position_ids=next_position_ids, inputs_embeds=next_inputs_embeds, past_key_values=past_key_values, use_cache=True)
+                out = self.decoder(inputs_embeds=next_inputs_embeds, past_key_values=past_key_values, use_cache=True)
             # [B,S,V] -> [B,V]
             logit = out.logits[:, -1]
             past_key_values = out.past_key_values
@@ -299,7 +299,6 @@ class CompressLLM(torch.nn.Module):
 
 def freeze_encoder(model):
     for name, param in model.named_parameters():
-        print(name)
         if name == "compress_head.weight" or name == "mem_tokens" or name == "special_tokens":
             continue
         param.requires_grad = False
@@ -311,10 +310,6 @@ def freeze_decoder(model):
 
 def load_adapter(model, save_path_and_name='adapter.pt', log=False):
     adapter_state_dict = torch.load(save_path_and_name, map_location='cpu')  # 先加载到CPU
-    if log:
-        print("Loading adapter parameters:")
-        for name, _ in adapter_state_dict.items():
-            print(f"[Load Adapter] {name}")
 
     # 将adapter的权重转移到模型的设备上
     adapter_state_dict = {k: v.to(model.device) for k, v in adapter_state_dict.items()}
@@ -330,7 +325,6 @@ def load_model_with_adapter(model_id, task_config, rank, save_path_and_name='ada
 def get_model_for_compress(model_id, task_config, rank):
     def add_compress_lora(model, task_config):
         for name, module in model.named_children():
-
             if name == "compress_head":
                 continue
             if isinstance(module, nn.Linear) and ((name == "q_proj") or (name == "v_proj")):
@@ -344,8 +338,6 @@ def get_model_for_compress(model_id, task_config, rank):
                 # Recursively apply this function to submodules
                 add_compress_lora(module, task_config)
 
-
-    
     model = CompressLLM(
         model_id,
         mem_size=task_config["mem_size"],

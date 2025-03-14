@@ -13,7 +13,7 @@ RelationExtraction_f1 = []
 TextbookQA_f1 = []
 rouge = Rouge()
 total = []
-with open('/mnt/zhaorunsong/lx/compress/mlllm-v2/last_test/instruction_inference_results.json', 'r') as file:
+with open('../experiment/example/instruction_inference_results.json', 'r') as file:
     data = json.load(file)
     for i in range(len(data)):
         result = 0

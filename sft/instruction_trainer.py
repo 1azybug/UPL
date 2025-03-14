@@ -55,12 +55,10 @@ def train(rank, args, world_size):
 
     setup(rank, world_size, args.port)
     torch.cuda.set_device(rank)
-
     training_config = config["training_config"]
     task_config = config['task_config']
-
     config["data_config"]["model_id"] = training_config["model_id"]
-    print(config["data_config"])
+
     train_examples, eval_examples = get_examples(**config["data_config"])
 
     random.seed(rank)
@@ -86,10 +84,6 @@ def train(rank, args, world_size):
     model = get_model(training_config["model_id"], task_config, rank)
     model = load_adapter(model, save_path_and_name=args.work_dir+'/adapter.pt', log=False)
 
-    if rank == 0:
-        count_parameters(model, config)
-        for name, param in model.named_parameters():
-            print(f"{name} - Shape: {param.shape} - requires_grad = {param.requires_grad}")
     ddp_model = DDP(model, device_ids=[rank] ,find_unused_parameters=True)
 
     # Instantiate the data loader
@@ -158,7 +152,6 @@ def train(rank, args, world_size):
 
             if step_num % (training_config["log_step"]*accumulation_steps) == 0:
                 if rank == 0:
-                    # print(info_list[-1])
                     logging.info(info_list[-1])
     
             if step_num % (training_config["save_step"]*accumulation_steps) == 0:

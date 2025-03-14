@@ -1,5 +1,9 @@
 import random
-
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from path_config import BASE_PATH
+sys.path.append(BASE_PATH)
 import torch
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -13,13 +17,13 @@ from transformers.models.llama.configuration_llama import LlamaConfig
 import argparse
 
 from pre_prepare_data import get_examples
-from pre_modeling import get_model, save_adapter, load_adapter
+from model.modeling import get_model, save_adapter, load_adapter
 from pre_dataloader import get_dataset
 
 import logging
 import wandb
 
-from util.utils import get_wsd_scheduler, training_step, setup
+from util.utils import get_wsd_scheduler, training_step, setup, count_parameters
 
 # 配置日志，同时输出到屏幕和文件
 logging.basicConfig(

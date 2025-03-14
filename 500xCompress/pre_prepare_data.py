@@ -41,13 +41,18 @@ def get_examples(model_id, dataset_repo="DKYoon/SlimPajama-6B",hf_token=None, to
     model_name = model_id.split('/')[-1]
     train_data_name = "train_"+model_name+"_"+str(token_num)+f"token_len-{min_len}.pt"
     eval_data_name = "eval_"+model_name+"_"+str(token_num)+f"token_len-{min_len}.pt"
-
     print(f"in:train_data_name:{train_data_name}")
-    if os.path.exists(eval_data_name):
+    if os.path.exists(train_data_name):
         print("loading data...")
-        return torch.load(eval_data_name), torch.load(eval_data_name)
+        return torch.load(train_data_name), torch.load(eval_data_name)
     print(f"preparing data :train_data_name:{train_data_name}")
 
+    model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+    torch_dtype=torch.bfloat16,
+    device_map="cpu",
+    token=hf_token
+)
     tokenizer = AutoTokenizer.from_pretrained(model_id, token=hf_token)
     
     long_text_list = get_long_text_list(dataset_repo)
@@ -66,13 +71,17 @@ def get_examples(model_id, dataset_repo="DKYoon/SlimPajama-6B",hf_token=None, to
         if len(ids) % min_len == 0:
             continue
         last_start = last_start * min_len
+        # random_start = random.randint(0, last_start)
         
         inputs = torch.LongTensor(ids[:last_start])
         lm_target = torch.LongTensor(ids[last_start:])
         examples.append({"inputs":inputs,"lm_target":lm_target})
-
         
-
+        # if len(examples)*min_len>=token_num:
+        #     break
+        
+    
+    print("total_token: " ,total_token)
     # 1k for validation
     torch.save(examples[1000:], train_data_name)
     torch.save(examples[:1000], eval_data_name)
@@ -87,9 +96,11 @@ if __name__ == "__main__":
     
     training_config = config["training_config"]
     config["data_config"]["model_id"] = training_config["model_id"]
-
+    
+    # print(config["data_config"])
     train_examples, eval_examples = get_examples(**config["data_config"])
-
+    # print(len(train_examples))
+    # print(train_examples[50])
 
 """
 python pre_prepare_data.py --work_dir CompressLLM

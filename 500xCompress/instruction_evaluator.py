@@ -21,13 +21,13 @@ from nltk.translate.bleu_score import sentence_bleu
 from torch.nn import DataParallel
 import torch.multiprocessing as mp
 
-from instruction_prepare_data import get_examples
-from model.modeling import get_model, save_adapter, load_adapter, load_adapter_to_merge_weight
+from instruction_prepare_data_mrqa import get_examples
+from instruction_modeling import get_model, save_adapter, load_adapter, load_adapter_to_merge_weight
 from instruction_dataloader import get_dataset
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--work_dir', type=str, default='instruction_rank-128_cl-lm_mrqa', required=False, help='Directory including the configuration file')
+    parser.add_argument('--work_dir', type=str, default='new-you-pe', required=False, help='Directory including the configuration file')
     parser.add_argument('--batch_size', type=int, default=1, required=False, help='total batch size')
     return parser.parse_args()
 
@@ -99,15 +99,17 @@ class Evaluator:
         plt.close()
 
     def evaluate(self, rank=0):
+        # rank:gpu_device_id
         training_config = self.config["training_config"]
         task_config = self.config["task_config"]
         train_examples, eval_examples = get_examples(**self.config["data_config"])
         eval_examples = eval_examples
         example_num_per_gpu = len(eval_examples)//training_config["device_count"]
+        # assert example_num_per_gpu*torch.cuda.device_count() == len(eval_examples)
 
         if rank <= self.device_count-2:
             eval_examples = eval_examples[rank*example_num_per_gpu:(rank+1)*example_num_per_gpu]
-        else:
+        else: # last gpu deal the left data.
             eval_examples = eval_examples[rank*example_num_per_gpu:]
 
         print(f"[INFO] GPU{rank}: eval_examples[{rank*example_num_per_gpu}:{rank*example_num_per_gpu+len(eval_examples)}], nums:{len(eval_examples)}")
@@ -116,16 +118,26 @@ class Evaluator:
         loader = DataLoader(dataset, batch_size=None)
         
         model = get_model(training_config["model_id"], task_config, rank)
-        model = load_adapter(model, save_path_and_name=self.work_dir+'/instruction_adapter.pt', log=True)
+        if task_config["use_merge_lora"]:
+           model = load_adapter_to_merge_weight(model, train_adapter=self.work_dir + '/adapter.pt', instruction_adapter=self.work_dir + '/instruction_adapter.pt',is_train=False)
+        else:
+           model = load_adapter(model, save_path_and_name=self.work_dir+'/instruction_adapter.pt', log=True)
         model.eval()
-
+        for name, param in model.named_parameters():
+            print(f"{name} - Shape: {param.shape} - requires_grad = {param.requires_grad}")
         info_list=[]
         with torch.no_grad():
             for inputs in tqdm(loader,total=len(eval_examples)//self.batch_size):
+                # inputs = {key:value.to(rank) for key,value in inputs.items()}
                 inputs = {key:value.to(rank) if value is not None else None for key,value in inputs.items()}
                 # output = model(inputs=inputs)
                 generate_text = model.lm_inference(inputs,segment_size=task_config["segment_size"])
-                info_list.append({"generate_text": generate_text})
+                # generate_text = model.vanilla_llama(inputs,segment_size=task_config["segment_size"])
+                # cl_generate_text = model.cl_inference(inputs, segment_size=task_config["segment_size"])
+                cl_generate_text = generate_text
+
+                # gen = self.tokenizer.decode(cl_generate_text, skip_special_tokens=False)
+                info_list.append({"generate_text": generate_text, "cl_generate_text": cl_generate_text})
 
         with open(self.work_dir+f'/instruction_eval_info_list_{rank}.json', 'w', encoding='utf-8') as f:
             json.dump(info_list, f, ensure_ascii=False)
@@ -191,8 +203,7 @@ def cal_cl_token_acc(cl_generate_text, examples_list, tokenizer):
 
         total_tokens += len(cl_gen_ids)
         correct_tokens += sum(1 for o,d in zip(cl_gen_ids, input_ids) if o == d)
-        acc.append(0)
-        # acc.append(correct_tokens / total_tokens)
+        acc.append(correct_tokens / total_tokens)
         correct_tokens = 0
         total_tokens = 0
         info_list.append({"input_text": input_text,
@@ -206,7 +217,7 @@ def cal_cl_token_acc(cl_generate_text, examples_list, tokenizer):
 if __name__ == "__main__":
     args = parse_args()
     world_size = torch.cuda.device_count()
-
+    world_size = 4
     with open(args.work_dir + "/config.json") as f:
         config = json.load(f)
 
@@ -228,18 +239,23 @@ if __name__ == "__main__":
         info_list += list_i
 
     generate_text = [entry["generate_text"] for entry in info_list]
+    cl_generate_text = [entry["cl_generate_text"] for entry in info_list]
 
     print("calculate BLEU4...")
     instruction_dataset_name = config["data_config"]["instruction_dataset_repo"].split('/')[-1]
     if os.path.exists(f'{instruction_dataset_name}_test_instruction_dataset.json'):
         with open(f'{instruction_dataset_name}_test_instruction_dataset.json', 'r', encoding='utf-8') as f:
             examples_list =  json.load(f)
+            examples_list =  examples_list
+    cl_generate_acc = cal_cl_token_acc(cl_generate_text, examples_list, tokenizer)
 
     instruction_inference_results = []
     bleu4_list = []
     rouge1_scores = []
     rouge = Rouge()
     for gen_text, example in zip(generate_text, examples_list):
+
+        # ans_text = example["answers"]
         answer = ""
         for i in range(len(example["answers"])):
             if i == len(example["answers"])-1:
@@ -275,8 +291,9 @@ if __name__ == "__main__":
     print(f"avg_compress_loss:{avg_compress_loss}")
     rouge1_f1 = np.mean(rouge1_scores)
     print(f"rouge1_f1:{rouge1_f1}")
+    print(f"cl_generate_acc:{cl_generate_acc}")
     with open(args.work_dir+f'/instruction_brief_eval_info.json', 'w', encoding='utf-8') as f:
-        json.dump(f"avg_bleu4:{avg_bleu4}, avg_lm_loss:{avg_lm_loss}, avg_compress_loss:{avg_compress_loss}, rouge1_f1:{rouge1_f1}", f, ensure_ascii=False)
+        json.dump(f"avg_bleu4:{avg_bleu4}, avg_lm_loss:{avg_lm_loss}, avg_compress_loss:{avg_compress_loss}, rouge1_f1:{rouge1_f1}, cl_generate_acc:{cl_generate_acc}", f, ensure_ascii=False)
 
     with open(args.work_dir+f'/instruction_inference_results.json', 'w', encoding='utf-8') as f:
         json.dump(instruction_inference_results, f, ensure_ascii=False, indent=4)

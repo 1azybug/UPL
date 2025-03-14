@@ -10,7 +10,7 @@ import json
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--work_dir', type=str, required=False, default="instruction_rank-128_lm_mrqa",help='Directory including the configuration file')
+    parser.add_argument('--work_dir', type=str, required=False, default="pwc_test",help='Directory including the configuration file')
     return parser.parse_args()
 
 
@@ -41,28 +41,20 @@ def get_ids(instruction_dataset_repo_name, examples_list, tokenizer, min_len, sp
     minn = 9999
     maxn = 0
     for example in tqdm(examples_list, desc="Processing examples"):
-        answer = ""
-        for i in range(len(example["answers"])):
-            if i == len(example["answers"])-1:
-                answer += example["answers"][i]
-            else:
-                if example[("answers")][i] == example[("answers")][i+1]:
-                    answer += example["answers"][i]
-                    break
-                answer += example[("answers")][i] + " "
-        context = tokenizer(example["context"], add_special_tokens=False)["input_ids"]
-        prompt = tokenizer(example["question"], add_special_tokens=False)["input_ids"]
-        answer = tokenizer(answer, add_special_tokens=False)["input_ids"]
+        
+        context = tokenizer(example["input"], add_special_tokens=False)["input_ids"]
+        prompt = tokenizer(example["prompt"], add_special_tokens=False)["input_ids"]
+        answer = tokenizer(example["answer"], add_special_tokens=False)["input_ids"]
         
         context_ids = tokenizer("### Context:\n")["input_ids"] + context
         question_ids = tokenizer("\n### Question:\n", add_special_tokens=False)["input_ids"] + prompt \
                        + tokenizer("\n### Answer:\n", add_special_tokens=False)["input_ids"]
         answer_ids = answer + tokenizer("</s>", add_special_tokens=False)["input_ids"]
 
-        if len(context_ids) > 5120:
+        if len(context_ids) < 510:
             continue
 
-        # 生成 instruction_target，它是一个标签，用来指导模型学习预测目标
+        # # 生成 instruction_target，它是一个标签，用来指导模型学习预测目标
         instruction_target = [-100 for x in question_ids] + [x for x in answer_ids]
         instruction_target = instruction_target[1:]
 
@@ -92,13 +84,18 @@ def get_examples(model_id, instruction_dataset_repo="sggetao/PwC",hf_token=None,
     instruction_dataset_repo_name = instruction_dataset_repo.split('/')[-1]
     train_data_name = f"{instruction_dataset_repo_name}_train_"+model_name+f"_len{min_len}_instruction.pt"
     eval_data_name = f"{instruction_dataset_repo_name}_eval_"+model_name+f"_len{min_len}_instruction.pt"
-
     print(f"in:train_data_name:{train_data_name}")
     if os.path.exists(train_data_name):
         print("loading data...")
         return torch.load(train_data_name), torch.load(eval_data_name)
     print(f"preparing data :train_data_name:{train_data_name}")
 
+    model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+    torch_dtype=torch.bfloat16,
+    device_map="cpu",
+    token=hf_token
+)
     tokenizer = AutoTokenizer.from_pretrained(model_id, token=hf_token)
     
     train_examples_list = get_examples_list(instruction_dataset_repo, split="train")
@@ -111,7 +108,7 @@ def get_examples(model_id, instruction_dataset_repo="sggetao/PwC",hf_token=None,
     torch.save(train_data, train_data_name)
     torch.save(test_data, eval_data_name)
     
-    return test_data, test_data
+    return train_data, test_data
     
 if __name__ == "__main__":
 
