@@ -2,8 +2,6 @@ import logging
 import pdb
 import queue
 import sys
-
-from peft import LoraConfig, get_peft_model
 from transformers import AutoModelForCausalLM, AutoTokenizer,BitsAndBytesConfig
 import torch
 from torch import nn
@@ -14,6 +12,7 @@ import torch.nn.functional as F
 import math
 import transformers
 sys.path.append('/mnt/zhaorunsong/lx/compress/')
+from model.lora import LinearLoraLayer, EmbeddingLoraLayer
 class CompressLLM(torch.nn.Module):
     def __init__(self, model_id, mem_size, head_num, device_rank, task_config):
         super().__init__()
@@ -216,7 +215,7 @@ class CompressLLM(torch.nn.Module):
         generate_text = torch.argmax(logits, dim=-1).tolist()
         return generate_text
 
-    def ae_inference(self, inputs, generate_num):
+    def ae_inference(self, inputs):
         compress_token_ids, compress_token, end_idx = self.compress(inputs)
         bsz, total_length, emb_size = inputs['input_ids'].size()
         inputs_embeds = self.model.model.embed_tokens(inputs['input_ids'])
@@ -233,7 +232,7 @@ class CompressLLM(torch.nn.Module):
         next_inputs_embeds = ae_emb.clone()
         next_position_ids = ae_position_ids.clone()
 
-        for i in range(generate_num):
+        for i in range(1024):
             if "wo_pe" in self.task_config:
                 out = self.decoder(inputs_embeds=next_inputs_embeds, past_key_values=past_key_values, use_cache=True)
             else:
@@ -251,7 +250,7 @@ class CompressLLM(torch.nn.Module):
 
 
 
-    # def vanilla_llama_forward(self, inputs):
+    # def forward(self, inputs):
     #     loss_info = {}
     #     inputs_embeds = self.model.model.embed_tokens(inputs["input_ids"])
     #     lm_target_emb = self.model.model.embed_tokens(inputs['lm_targets'][:, :-1])
@@ -295,3 +294,79 @@ class CompressLLM(torch.nn.Module):
         return generate_text
 
 
+def freeze_encoder(model):
+    for name, param in model.named_parameters():
+        print(name)
+        if name == "compress_head.weight" or name == "mem_tokens" or name == "special_tokens":
+            continue
+        param.requires_grad = False
+
+def freeze_decoder(model):
+    for name, param in model.named_parameters():
+        param.requires_grad = False
+
+
+def load_adapter(model, save_path_and_name='adapter.pt', log=False):
+    adapter_state_dict = torch.load(save_path_and_name, map_location='cpu')  # 先加载到CPU
+    if log:
+        print("Loading adapter parameters:")
+        for name, _ in adapter_state_dict.items():
+            print(f"[Load Adapter] {name}")
+
+    # 将adapter的权重转移到模型的设备上
+    adapter_state_dict = {k: v.to(model.device) for k, v in adapter_state_dict.items()}
+
+    model.load_state_dict(adapter_state_dict, strict=False)
+    return model
+
+def load_model_with_adapter(model_id, task_config, rank, save_path_and_name='adapter.pt', log=False):
+    model = get_model(model_id, task_config, rank)
+    load_adapter(model, save_path_and_name, log)
+    return model
+
+def get_model_for_compress(model_id, task_config, rank):
+    def add_compress_lora(model, task_config):
+        for name, module in model.named_children():
+
+            if name == "compress_head":
+                continue
+            if isinstance(module, nn.Linear) and ((name == "q_proj") or (name == "v_proj")):
+                setattr(model, name, LinearLoraLayer(module.in_features, module.out_features, r=128,
+                                                     weight=module.weight.data.clone()))
+            # elif isinstance(module, nn.Embedding):
+            #     setattr(model, name,
+            #             EmbeddingLoraLayer(module.num_embeddings, module.embedding_dim, module.padding_idx, r=128,
+            #                                weight=module.weight.data.clone()))
+            else:
+                # Recursively apply this function to submodules
+                add_compress_lora(module, task_config)
+
+
+    
+    model = CompressLLM(
+        model_id,
+        mem_size=task_config["mem_size"],
+        head_num=task_config["head_num"],
+        device_rank=rank,
+        task_config=task_config
+    )
+    freeze_encoder(model)
+    add_compress_lora(model, task_config)
+    return model
+
+def get_model(model_id, task_config, rank):
+    if task_config["task_type"] == "Compress":
+        return get_model_for_compress(model_id, task_config, rank)
+    raise Exception("Don't exist [{task_type}] task.")
+
+def save_adapter(model, save_path_and_name='adapter.pt', log=False):
+    adapter_name = set()
+    for name, param in model.named_parameters():
+        if param.requires_grad:
+            if log:
+                print("[Save Adapter]", name)
+            adapter_name.add(name)
+
+    state_dict = model.state_dict()
+    adapter_state_dict = {name: param for name, param in state_dict.items() if name in adapter_name}
+    torch.save(adapter_state_dict, save_path_and_name)
