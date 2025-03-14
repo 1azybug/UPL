@@ -1,7 +1,8 @@
+import sys
+sys.path.append('/mnt/zhaorunsong/lx/test-icae/')
 import logging
 import pdb
 import queue
-import sys
 from transformers import AutoModelForCausalLM, AutoTokenizer,BitsAndBytesConfig
 import torch
 from torch import nn
@@ -11,7 +12,6 @@ from transformers.modeling_outputs import CausalLMOutputWithPast
 import torch.nn.functional as F
 import math
 import transformers
-sys.path.append('/mnt/zhaorunsong/lx/compress/')
 from model.lora import LinearLoraLayer, EmbeddingLoraLayer
 class CompressLLM(torch.nn.Module):
     def __init__(self, model_id, mem_size, head_num, device_rank, task_config):
@@ -269,7 +269,7 @@ class CompressLLM(torch.nn.Module):
 
 
 
-    def vanilla_llama(self, inputs):
+    def vanilla_llama_inference(self, inputs):
         inputs_embeds = self.model.model.embed_tokens(inputs["input_ids"])
         lm_target_emb = self.model.model.embed_tokens(inputs['lm_targets'])
         encode_inputs_embeds = torch.cat([inputs_embeds, lm_target_emb], dim=1)

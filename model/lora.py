@@ -1,3 +1,4 @@
+from torch import nn
 class LinearLoraLayer(nn.Module):
     # No bias in LLama3 LinearLayer
     def __init__(self, in_features, out_features, r=16, weight=None):

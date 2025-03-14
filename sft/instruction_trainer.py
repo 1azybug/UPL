@@ -1,3 +1,5 @@
+import sys
+sys.path.append('/mnt/zhaorunsong/lx/test-icae/')
 import random
 
 import torch
@@ -11,13 +13,12 @@ import json
 from tqdm import tqdm
 from transformers.models.llama.modeling_llama import LlamaForCausalLM
 import argparse
-
 from instruction_prepare_data import get_examples
-from model.modeling import get_model, save_adapter, load_adapter, load_adapter_to_merge_weight
+from model.modeling import get_model, save_adapter, load_adapter
 from instruction_dataloader import get_dataset
-
 import logging
 import wandb
+from util.utils import setup, count_parameters, get_wsd_scheduler, training_step
 
 # 配置日志，同时输出到屏幕和文件
 logging.basicConfig(
@@ -80,10 +81,7 @@ def train(rank, args, world_size):
 
     # Instantiate the model and move it to the corresponding GPU
     model = get_model(training_config["model_id"], task_config, rank)
-    if task_config["use_merge_lora"]:
-        model = load_adapter_to_merge_weight(model, train_adapter=args.work_dir+'/adapter.pt', is_train=True)
-    else:
-        model = load_adapter(model, save_path_and_name=args.work_dir+'/adapter.pt', log=False)
+    model = load_adapter(model, save_path_and_name=args.work_dir+'/adapter.pt', log=False)
 
     if rank == 0:
         count_parameters(model, config)
