@@ -1,6 +1,8 @@
 import logging
 import wandb
+from path_config import BASE_PATH
 import sys
+sys.path.append(BASE_PATH)
 import random
 import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -14,7 +16,6 @@ from tqdm import tqdm
 from transformers.models.llama.modeling_llama import LlamaForCausalLM
 import argparse
 import torch.distributed as dist
-sys.path.append('/mnt/zhaorunsong/lx/test-icae/')
 from model.modeling import CompressLLM
 from model.lora import LinearLoraLayer, EmbeddingLoraLayer
 from torch.optim.lr_scheduler import LinearLR

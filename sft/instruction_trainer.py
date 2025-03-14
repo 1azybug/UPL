@@ -1,5 +1,9 @@
+
 import sys
-sys.path.append('/mnt/zhaorunsong/lx/test-icae/')
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from path_config import BASE_PATH
+sys.path.append(BASE_PATH)
 import random
 
 import torch
@@ -7,7 +11,6 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.optim import optimizer
 from torch.utils.data import DataLoader, Dataset, IterableDataset
 import torch.multiprocessing as mp
-import os
 import time
 import json
 from tqdm import tqdm

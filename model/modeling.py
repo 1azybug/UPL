@@ -1,5 +1,8 @@
 import sys
-sys.path.append('/mnt/zhaorunsong/lx/test-icae/')
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from path_config import BASE_PATH
+sys.path.append(BASE_PATH)
 import logging
 import pdb
 import queue
