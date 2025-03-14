@@ -50,7 +50,6 @@ class CompressLLM(torch.nn.Module):
         tot_task = 0
         loss_info = {}
         compress_token_ids, compress_token, end_idx = self.compress(inputs)
-        bsz, total_length, emb_size = inputs['input_ids'].size()
 
         # compress loss
         if self.task_config["use_compress_loss"]:
@@ -67,6 +66,7 @@ class CompressLLM(torch.nn.Module):
 
         if self.task_config["use_ae_loss"]:
             inputs_embeds = self.model.model.embed_tokens(inputs['input_ids'])
+            bsz, seq_len, emb_size = inputs_embeds.size()
             # [1,E] -> [1,1,E] -> [B,1,E]
             expand_ae_token = self.special_tokens[0:1].unsqueeze(0).expand(bsz, 1, emb_size)
             # [B,mem_size,E];     [B,1,E];      [B,seq_len-1,E]
@@ -88,7 +88,7 @@ class CompressLLM(torch.nn.Module):
         # LM loss
         if self.task_config["use_lm_loss"]:
             lm_target_emb = self.model.model.embed_tokens(inputs['lm_targets'][:, :-1])
-            _, seq_len, emb_size = lm_target_emb.size()
+            bsz, seq_len, emb_size = lm_target_emb.size()
             # [1,E] -> [1,1,E] -> [B,1,E]
             expand_lm_token = self.special_tokens[1:2].unsqueeze(0).expand(bsz, 1, emb_size)
             lm_emb = torch.cat([compress_token, expand_lm_token,lm_target_emb],dim=1)
