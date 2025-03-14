@@ -1,3 +1,25 @@
+import logging
+import wandb
+import sys
+import random
+import torch
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.optim import optimizer
+from torch.utils.data import DataLoader, Dataset, IterableDataset
+import torch.multiprocessing as mp
+import os
+import time
+import json
+from tqdm import tqdm
+from transformers.models.llama.modeling_llama import LlamaForCausalLM
+import argparse
+import torch.distributed as dist
+sys.path.append('/openbayes/home/Multi-LoRA')
+from model.modeling import CompressLLM
+from model.lora import LinearLoraLayer, EmbeddingLoraLayer
+from torch.optim.lr_scheduler import LinearLR
+from torch.optim.lr_scheduler import ConstantLR
+from torch.optim.lr_scheduler import SequentialLR
 
 def get_wsd_scheduler(optimizer, training_steps):
     W = 300
@@ -57,107 +79,6 @@ def count_parameters(model, config):
     trainable_percentage = (trainable_params / total_params) * 100
     logging.info(f"Trainable parameters percentage: {trainable_percentage:.2f}%")
 
-
-def freeze_encoder(model):
-    for name, param in model.named_parameters():
-        print(name)
-        if name == "compress_head.weight" or name == "mem_tokens" or name == "special_tokens":
-            continue
-        param.requires_grad = False
-
-def freeze_decoder(model):
-    for name, param in model.named_parameters():
-        param.requires_grad = False
-
-
-def load_adapter(model, save_path_and_name='adapter.pt', log=False):
-    adapter_state_dict = torch.load(save_path_and_name, map_location='cpu')  # 先加载到CPU
-    if log:
-        print("Loading adapter parameters:")
-        for name, _ in adapter_state_dict.items():
-            print(f"[Load Adapter] {name}")
-
-    # 将adapter的权重转移到模型的设备上
-    adapter_state_dict = {k: v.to(model.device) for k, v in adapter_state_dict.items()}
-
-    model.load_state_dict(adapter_state_dict, strict=False)
-    return model
-
-def load_model_with_adapter(model_id, task_config, rank, save_path_and_name='adapter.pt', log=False):
-    model = get_model(model_id, task_config, rank)
-    load_adapter(model, save_path_and_name, log)
-    return model
-
-def get_model_for_compress(model_id, task_config, rank):
-    def add_compress_lora(model, task_config):
-        for name, module in model.named_children():
-
-            if name == "compress_head":
-                continue
-            if isinstance(module, nn.Linear) and ((name == "q_proj") or (name == "v_proj")):
-                setattr(model, name, LinearLoraLayer(module.in_features, module.out_features, r=128,
-                                                     weight=module.weight.data.clone()))
-            # elif isinstance(module, nn.Embedding):
-            #     setattr(model, name,
-            #             EmbeddingLoraLayer(module.num_embeddings, module.embedding_dim, module.padding_idx, r=128,
-            #                                weight=module.weight.data.clone()))
-            else:
-                # Recursively apply this function to submodules
-                add_compress_lora(module, task_config)
-
-    def add_multi_lora(model, task_config):
-        for name, module in model.named_children():
-            if name == "compress_head":
-                continue
-            if isinstance(module, nn.Linear):
-                setattr(model, name,
-                        TripleLinearLoraLayer(module.in_features, module.out_features, r_cl=16, r_lm=16, r_cl_prime=16,
-                                              weight=module.weight.data.clone()))
-            elif isinstance(module, nn.Embedding):
-                setattr(model, name,
-                        TripleEmbeddingLoraLayer(module.num_embeddings, module.embedding_dim, module.padding_idx,
-                                                 r_cl=128, r_lm=128, r_cl_prime=128, weight=module.weight.data.clone()))
-            else:
-                # Recursively apply this function to submodules
-                add_multi_lora(module, task_config)
-
-    if task_config["use_multi_lora"]:
-        model = CompressLLM(
-            model_id,
-            mem_size=task_config["mem_size"],
-            head_num=task_config["head_num"],
-            device_rank=rank,
-            task_config=task_config
-        )
-        add_multi_lora(model, task_config)
-    else:
-        model = CompressLLM(
-            model_id,
-            mem_size=task_config["mem_size"],
-            head_num=task_config["head_num"],
-            device_rank=rank,
-            task_config=task_config
-        )
-        freeze_encoder(model)
-        add_compress_lora(model, task_config)
-    return model
-
-def get_model(model_id, task_config, rank):
-    if task_config["task_type"] == "Compress":
-        return get_model_for_compress(model_id, task_config, rank)
-    raise Exception("Don't exist [{task_type}] task.")
-
-def save_adapter(model, save_path_and_name='adapter.pt', log=False):
-    adapter_name = set()
-    for name, param in model.named_parameters():
-        if param.requires_grad:
-            if log:
-                print("[Save Adapter]", name)
-            adapter_name.add(name)
-
-    state_dict = model.state_dict()
-    adapter_state_dict = {name: param for name, param in state_dict.items() if name in adapter_name}
-    torch.save(adapter_state_dict, save_path_and_name)
 
 
 def training_step(ddp_model, inputs, rank, accumulation_steps):
