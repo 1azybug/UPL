@@ -845,7 +845,7 @@ def get_model_for_compress(model_id, task_config, rank):
             task_config=task_config
         )
         freeze_model(model)
-        add_compress_lora(model, task_config)
+        add_compress_lora(model.model, task_config)
     return model
 
 
