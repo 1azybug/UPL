@@ -1,3 +1,8 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from path_config import BASE_PATH
+sys.path.append(BASE_PATH)
 import json
 import os
 import matplotlib.pyplot as plt
@@ -10,15 +15,12 @@ from transformers.models.llama.modeling_llama import LlamaForCausalLM
 import numpy as np
 import argparse
 from torch.utils.data import DataLoader, Dataset, IterableDataset
-
 import logging
 from nltk.translate.bleu_score import sentence_bleu
-
 from torch.nn import DataParallel
 import torch.multiprocessing as mp
-
 from pre_prepare_data import get_examples
-from pre_modeling import get_model, save_adapter, load_adapter
+from model.modeling import get_model, save_adapter, load_adapter
 from pre_dataloader import get_dataset
 
 def parse_args():

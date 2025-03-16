@@ -22,7 +22,7 @@ from torch.nn import DataParallel
 import torch.multiprocessing as mp
 
 from instruction_prepare_data import get_examples
-from model.modeling import get_model, save_adapter, load_adapter, load_adapter_to_merge_weight
+from model.modeling import get_model, save_adapter, load_adapter
 from instruction_dataloader import get_dataset
 
 def parse_args():

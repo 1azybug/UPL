@@ -43,9 +43,9 @@ def get_examples(model_id, dataset_repo="DKYoon/SlimPajama-6B",hf_token=None, to
     eval_data_name = "eval_"+model_name+"_"+str(token_num)+f"token_len-{min_len}.pt"
 
     print(f"in:train_data_name:{train_data_name}")
-    if os.path.exists(eval_data_name):
+    if os.path.exists(train_data_name):
         print("loading data...")
-        return torch.load(eval_data_name), torch.load(eval_data_name)
+        return torch.load(train_data_name), torch.load(eval_data_name)
     print(f"preparing data :train_data_name:{train_data_name}")
 
     tokenizer = AutoTokenizer.from_pretrained(model_id, token=hf_token)

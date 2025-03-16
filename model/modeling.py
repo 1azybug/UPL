@@ -88,6 +88,28 @@ class CompressLLM(torch.nn.Module):
             tot_task += 1
 
         # LM loss
+        # if self.task_config["use_lm_loss"]:
+        #     lm_target_emb = self.model.model.embed_tokens(inputs['lm_targets'][:, :-1])
+        #     bsz, seq_len, emb_size = lm_target_emb.size()
+        #     # [1,E] -> [1,1,E] -> [B,1,E]
+        #     expand_lm_token = self.special_tokens[1:2].unsqueeze(0).expand(bsz, 1, emb_size)
+        #     lm_emb = torch.cat([compress_token, expand_lm_token,lm_target_emb],dim=1)
+        #     latter_position_ids = torch.arange(end_idx+1,end_idx+seq_len+2,device=lm_target_emb.device).unsqueeze(0)
+        #     lm_position_ids = torch.cat([compress_token_ids,latter_position_ids-1],dim=1)
+        #     if self.task_config["use_pe"]:
+        #         outputs = self.decoder(inputs_embeds=lm_emb, position_ids=lm_position_ids)
+        #     else:
+        #         outputs = self.decoder(inputs_embeds=lm_emb)
+        #     # [B,mem_size+S,V] -> [B,S,V]
+        #     logits = outputs.logits[:,compress_token.size(1):]
+        #     logits = logits[:, 1:]
+        #     logits = logits.contiguous().view(-1, self.vocab_size)
+        #     inputs["instruction_target"] = inputs["instruction_target"].contiguous().view(-1).to(logits.device)
+        #     lm_loss = self.loss_fct(logits, inputs["instruction_target"])
+        #     loss_info["lm_loss"] = lm_loss.item()
+        #     tot_loss += lm_loss
+        #     tot_task += 1
+
         if self.task_config["use_lm_loss"]:
             lm_target_emb = self.model.model.embed_tokens(inputs['lm_targets'][:, :-1])
             bsz, seq_len, emb_size = lm_target_emb.size()
@@ -101,11 +123,10 @@ class CompressLLM(torch.nn.Module):
             else:
                 outputs = self.decoder(inputs_embeds=lm_emb)
             # [B,mem_size+S,V] -> [B,S,V]
-            logits = outputs.logits[:,compress_token.size(1):]
-            logits = logits[:, 1:]
+            logits = outputs.logits[:, compress_token.size(1):]
             logits = logits.contiguous().view(-1, self.vocab_size)
-            inputs["instruction_target"] = inputs["instruction_target"].contiguous().view(-1).to(logits.device)
-            lm_loss = self.loss_fct(logits, inputs["instruction_target"])
+            inputs['lm_targets'] = inputs['lm_targets'].contiguous().view(-1).to(logits.device)
+            lm_loss = self.loss_fct(logits, inputs['lm_targets'])
             loss_info["lm_loss"] = lm_loss.item()
             tot_loss += lm_loss
             tot_task += 1
