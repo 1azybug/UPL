@@ -17,7 +17,7 @@
         "mem_size": 102,
         "compress_ratio": 5,
         "task_type": "Compress",
-        "use_pe": true,
+        "use_pe": false,
         "use_ae_loss": true,
         "use_lm_loss": true
     },
@@ -39,7 +39,7 @@
         "mem_size": 102,
         "compress_ratio": 5,
         "task_type": "Compress",
-        "use_pe": true,
+        "use_pe": false,
         "use_lm_loss": true
     },
     "data_config": {

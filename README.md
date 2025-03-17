@@ -15,6 +15,8 @@ pip install -r requirements.txt
 3. 修改experiment文件夹下的[config.json](./experiment/main/ICAE_1.1B_UPL/config.json)文件，填写模型和数据集的本地路径
 ```
 "model_id": "your_model_path",
+"dataset_repo": "your_data_path/DKYoon/SlimPajama-6B",
+"instruction_dataset_repo": "your_data_path/mrqa-workshop_mrqa"
 ```
 
 4. 修改experiment文件夹下的[config.json](./experiment/main/ICAE_1.1B_UPL/config.json)文件，**根据您的GPU数量修改梯度累积的步数**，确保 
@@ -27,18 +29,14 @@ batch_size_per_device*device_count*gradient_accumulation_steps==total_batch_size
 "gradient_accumulation_steps": 2,
 ```
 
-在训练之前，在experiment文件夹下创建 sy_1文件夹，在 sy_1下添加config配置模型和数据集路径以及超参数
-- 若想去掉位置编码，则直接在config中use_pe=False
-- 若想去掉ae_loss，则直接在config中use_ae_loss=False
-
+## 从这里继续debug(疑问：怎么定位work dir的东西？)
 ## 继续预训练
 ```
-注意事项：config的learning_rate是0.0001
 cd pretrain
 
-处理一次数据集即可：python pre_prepare_data.py --work_dir '../experiment/example'
-训练模型：python ./pre_trainer.py --work_dir '../experiment/example' --port 14529
-测试模型：python ./pre_evaluator.py --work_dir '../experiment/example' --batch_size 1
+处理一次数据集即可：python pre_prepare_data.py --work_dir '../experiment/main/ICAE_1.1B_UPL'
+训练模型：python ./pre_trainer.py --work_dir '../experiment/main/ICAE_1.1B_UPL' --port 14529
+测试模型：python ./pre_evaluator.py --work_dir '../experiment/main/ICAE_1.1B_UPL' --batch_size 1
 ```
 
 ## 微调

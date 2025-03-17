@@ -10,14 +10,14 @@ import json
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--work_dir', type=str, default="compressLLM_pwc_ntp", required=False, help='Directory including the configuration file')
+    parser.add_argument('--work_dir', type=str, required=True, help='Directory including the configuration file')
     return parser.parse_args()
 
 
-def get_long_text_list(dataset_repo):
+def get_long_text_list(dataset_repo, output_dir, min_len, max_len):
     # cache long text for preventing full dataset traversal on each preparation. 
-    if os.path.exists('long_text.json'):
-        with open('long_text.json', 'r', encoding='utf-8') as f:
+    if os.path.exists(f'{output_dir}/long_text.json'):
+        with open(f'{output_dir}/long_text.json', 'r', encoding='utf-8') as f:
             long_text_list =  json.load(f)
         return long_text_list
 
@@ -25,59 +25,67 @@ def get_long_text_list(dataset_repo):
 
     long_text_list = []
     for example in tqdm(dataset, desc="Processing examples"):
-        if 512 <= len(example["text"]) <= 512*8:
+        if min_len*2 <= len(example["text"]) <= max_len*6:  # one token \approx 2~6 char, here filter very long and very short text
             long_text_list.append(example["text"])
         
-    with open('long_text.json', 'w', encoding='utf-8') as f:
+    with open(f'{output_dir}/long_text.json', 'w', encoding='utf-8') as f:
         json.dump(long_text_list, f, ensure_ascii=False)
 
     return long_text_list
 
     
 
-
-def get_examples(model_id, dataset_repo="DKYoon/SlimPajama-6B",hf_token=None, token_num=1_000_000_000,min_len=512, instruction_dataset_repo=None):
-    
+def get_examples(model_id, dataset_repo, samples_num, min_len, max_len, instruction_dataset_repo, output_dir):
     model_name = model_id.split('/')[-1]
-    train_data_name = "train_"+model_name+"_"+str(token_num)+f"token_len-{min_len}.pt"
-    eval_data_name = "eval_"+model_name+"_"+str(token_num)+f"token_len-{min_len}.pt"
+    train_data_name = f"{output_dir}/train_"+model_name+"_"+str(samples_num)+f"samples_{min_len}-{max_len}len_sorted.pt"
+    eval_data_name = f"{output_dir}/eval_"+model_name+"_"+str(samples_num)+f"samples_{min_len}-{max_len}len.pt"
 
-    print(f"in:train_data_name:{train_data_name}")
     if os.path.exists(train_data_name):
         print("loading data...")
         return torch.load(train_data_name), torch.load(eval_data_name)
     print(f"preparing data :train_data_name:{train_data_name}")
 
-    tokenizer = AutoTokenizer.from_pretrained(model_id, token=hf_token)
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
     
-    long_text_list = get_long_text_list(dataset_repo)
+    long_text_list = get_long_text_list(dataset_repo, output_dir, min_len, max_len)
 
     examples = []
-    total_token = 0
     for text in tqdm(long_text_list, desc="Processing examples"):
         
         ids = tokenizer(text)["input_ids"]
         
-        if len(ids)<min_len+2:
+        if len(ids)<min_len:
             continue
-        total_token += len(ids)
+        if len(ids)>max_len:
+            continue
         # half for prefix, half for LM
-        last_start = len(ids) // min_len
-        if len(ids) % min_len == 0:
-            continue
-        last_start = last_start * min_len
+        last_start = len(ids) // 2
         
         inputs = torch.LongTensor(ids[:last_start])
         lm_target = torch.LongTensor(ids[last_start:])
         examples.append({"inputs":inputs,"lm_target":lm_target})
 
-        
+        if len(examples) == samples_num+1000:
+            break
 
-    # 1k for validation
-    torch.save(examples[1000:], train_data_name)
-    torch.save(examples[:1000], eval_data_name)
+    # 分割验证集和训练集，并对训练集排序
+    eval_examples = examples[:1000]
+    train_examples = examples[1000:]
     
-    return examples[1000:], examples[:1000]
+    print(train_examples[0]["inputs"].shape)
+    # 按输入长度从短到长排序训练集
+    train_examples_sorted = sorted(train_examples, key=lambda x: x["inputs"].size(0))
+    print(train_examples_sorted[0]["inputs"].shape)
+    
+    # 保存处理后的数据
+    torch.save(train_examples_sorted, train_data_name)
+    torch.save(eval_examples, eval_data_name)
+
+
+    print(len(train_examples_sorted))
+    print(len(eval_examples))
+    return train_examples_sorted, eval_examples
+
     
 if __name__ == "__main__":
 
@@ -85,16 +93,19 @@ if __name__ == "__main__":
     with open(args.work_dir+"/config.json") as f:
         config=json.load(f)
     
-    training_config = config["training_config"]
+    training_config = config["pretrain_training_config"]
     config["data_config"]["model_id"] = training_config["model_id"]
+
+    output_dir = "output"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    config["data_config"]["output_dir"] = output_dir
 
     train_examples, eval_examples = get_examples(**config["data_config"])
 
-
 """
-python pre_prepare_data.py --work_dir CompressLLM
+cd pretrain
+python pre_prepare_data.py --work_dir '../experiment/debug/quick'
 
-unset HF_HUB_OFFLINE
-HF_ENDPOINT=https://hf-mirror.com HF_DATASETS_OFFLINE=0 HF_HUB_OFFLINE=0 python pre_prepare_data.py --work_dir compressLLM_len-510_ratio-15
-HF_ENDPOINT=https://hf-mirror.com python pre_prepare_data.py --work_dir compressLLM_len-510_ratio-15
 """
