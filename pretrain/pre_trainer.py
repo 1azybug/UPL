@@ -57,30 +57,36 @@ def train(rank, args, world_size):
     setup(rank, world_size, args.port)
     torch.cuda.set_device(rank)
 
-    training_config = config["training_config"]
-    task_config = config['task_config']
+    training_config = config["pretrain_training_config"]
+    task_config = config['pretrain_task_config']
 
     config["data_config"]["model_id"] = training_config["model_id"]
-    print(config)
+    output_dir = "output"
+    config["data_config"]["output_dir"] = output_dir
+    # print(config)
     train_examples, eval_examples = get_examples(**config["data_config"])
 
     # cal the total step
     training_steps = len(train_examples)//training_config["total_batch_size"]
 
     # drop last examples
+    # train_examples = train_examples[24001:training_steps*training_config["total_batch_size"]]  # for checking pids of longer context 
     train_examples = train_examples[:training_steps*training_config["total_batch_size"]]
     if rank==0:
         logging.info(f"[INFO] total_examples:{len(train_examples)} | training_steps:{training_steps}")
         
-    # assigning data to each GPU individually
-    example_num_per_gpu = len(train_examples) // training_config["device_count"]
-    start_index = rank * example_num_per_gpu
-    end_index = start_index + example_num_per_gpu
-    train_examples = train_examples[start_index:end_index]
+    indices = [i for i in range(len(train_examples))]
 
-    logging.info(f"[INFO] rank{rank} training examples[{start_index}:{end_index}] | example_nums:{len(train_examples)} | training_steps:{training_steps}")
+    device_count = training_config["device_count"]
+    # The data is interleaved to obtain a batch containing samples of similar length
+    train_examples = train_examples[rank::device_count]    # train_examples = train_examples[start_index:end_index]
+
+    
+    logging.info(f"[INFO] rank{rank} training examples: {indices[rank::device_count][:4]} ... {indices[rank::device_count][-4:]}| example_nums:{len(train_examples)} | training_steps:{training_steps}")
+    
     model = get_model(training_config["model_id"], task_config, rank)
-
+    
+    # check non-frozen parameters
     if rank == 0:
         count_parameters(model, config)
     ddp_model = DDP(model, device_ids=[rank], find_unused_parameters=True)
@@ -104,22 +110,19 @@ def train(rank, args, world_size):
         def save():
             if rank!=0:
                 return
-            with open(os.path.join(args.work_dir,"info.json"),'w') as f:
+            with open(os.path.join(args.work_dir,f"{output_dir}/info.json"),'w') as f:
                 json.dump(info_list,f,indent=4)
 
-            with open(os.path.join(args.work_dir,"config.json"),'w') as f:
+            with open(os.path.join(args.work_dir,f"{output_dir}/config.json"),'w') as f:
                 json.dump(config,f,indent=4)
                 
-            save_adapter(ddp_model.module,save_path_and_name=os.path.join(args.work_dir,"adapter.pt"))
+            save_adapter(ddp_model.module,save_path_and_name=os.path.join(args.work_dir,f"{output_dir}/adapter.pt"))
 
         if rank == 0:
             progress_bar = tqdm(total=training_steps*accumulation_steps)
 
         for inputs in loader:
             step_num += 1
-
-            if (task_config["task_type"]=="Compress") and ("addition" in task_config) and (task_config["addition"]=="without_compress_loss"):
-                del inputs["compress_targets"]
 
             if step_num % accumulation_steps == 0:
                 loss = training_step(ddp_model,inputs,rank,accumulation_steps)
@@ -165,17 +168,17 @@ if __name__ == "__main__":
     args = parse_args()
     world_size = torch.cuda.device_count()
 
-    # if os.path.exists(args.work_dir+f'/adapter.pt'):
-    #     print("adapter is already exist")
-    #     exit(0)
+    output_dir = "output"
+    if not os.path.exists(os.path.join(args.work_dir,output_dir)):
+        os.makedirs(os.path.join(args.work_dir,output_dir))
+
     mp.spawn(train,
              args=(args,world_size),
              nprocs=world_size,
              join=True)
 
 """
-# 用 > train.log 无法实时查看输出
-CUDA_VISIBLE_DEVICES=4,5,6,7 python ./pre_trainer.py --config_path ./models/Memorization/config.json --port 12353
+CUDA_VISIBLE_DEVICES=1,3 python ./pre_trainer.py --work_dir '../experiment/debug/quick' --port 14529
 """
 
 

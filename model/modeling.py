@@ -15,9 +15,11 @@ from transformers.modeling_outputs import CausalLMOutputWithPast
 import torch.nn.functional as F
 import math
 import transformers
-from model.lora import LinearLoraLayer, EmbeddingLoraLayer
+from model.lora import LinearLoraLayer
+
+
 class CompressLLM(torch.nn.Module):
-    def __init__(self, model_id, mem_size, head_num, device_rank, task_config):
+    def __init__(self, model_id, mem_size, compress_ratio, device_rank, task_config):
         super().__init__()
         self.loss_fct = nn.CrossEntropyLoss(ignore_index=-100)
         self.model = AutoModelForCausalLM.from_pretrained(
@@ -35,12 +37,11 @@ class CompressLLM(torch.nn.Module):
         self.task_config = task_config
         config = self.model.config
         self.vocab_size = config.vocab_size
-        self.segment_len = task_config["segment_size"]
+        self.chunk_size = task_config["chunk_size"]
         self.mem_tokens = nn.Parameter(self.model.model.embed_tokens.weight.new_zeros((mem_size, config.hidden_size)), requires_grad=True)
         self.special_tokens = nn.Parameter(self.model.model.embed_tokens.weight.new_zeros((2, config.hidden_size)), requires_grad=True)
-        self.head_num = head_num
-        self.compress_head = nn.Linear(config.hidden_size, head_num*config.vocab_size, bias=False, device=f"cuda:{device_rank}",
-                                            dtype=self.model.model.embed_tokens.weight.dtype)
+        self.compress_ratio = compress_ratio
+        self.mem_size = mem_size
 
         mean = torch.mean(self.model.model.embed_tokens.weight).item()
         std = torch.std(self.model.model.embed_tokens.weight).item()
@@ -51,51 +52,73 @@ class CompressLLM(torch.nn.Module):
         tot_loss = 0
         tot_task = 0
         loss_info = {}
+
+        # context position ids:[1,......,end_idx]
         compress_token_ids, compress_token, end_idx = self.compress(inputs)
 
-        # compress loss
-        if self.task_config["use_compress_loss"]:
-            # [B,mem_size,emb_size] -> [B,mem_size,head_num*vocab_size]
-            logits =  self.compress_head(compress_token)
-            # [B,mem_size,head_num*vocab_size] -> [B,tot_Seg_len,V] -> [B,seq_len,V]
-            logits = logits.float()
-            logits = logits.contiguous().view(-1, self.vocab_size)
-            compress_targets = inputs["input_ids"].contiguous().view(-1).to(logits.device)
-            compress_loss = self.loss_fct(logits, compress_targets)
-            loss_info["compress_loss"] = compress_loss.item()
-            tot_loss += compress_loss
-            tot_task += 1
-
-        if self.task_config["use_ae_loss"]:
-            inputs_embeds = self.model.model.embed_tokens(inputs['input_ids'])
+        if self.task_config["is_pretrain"] and self.task_config["use_ae_loss"]:
+            inputs_embeds = self.decoder.model.embed_tokens(inputs['input_ids'])  # inputs['input_ids']==inputs['ae_targets']
             bsz, seq_len, emb_size = inputs_embeds.size()
             # [1,E] -> [1,1,E] -> [B,1,E]
             expand_ae_token = self.special_tokens[0:1].unsqueeze(0).expand(bsz, 1, emb_size)
             # [B,mem_size,E];     [B,1,E];      [B,seq_len-1,E]
             ae_emb = torch.cat([compress_token, expand_ae_token, inputs_embeds[:, :-1, :]], dim=1)
-            position_ids = torch.arange(1, inputs_embeds.size(1)+1, device=inputs_embeds.device).unsqueeze(0)
-            ae_position_ids = torch.cat([compress_token_ids, position_ids - 1], dim=1)
+
+            # ae_pids:[0], ae_target pids:[1,......,end_idx-1] because drop the last token to predict [1,...,end_idx]
+            position_ids = torch.arange(0, inputs_embeds.size(1), device=inputs_embeds.device).unsqueeze(0)
+            ae_position_ids = torch.cat([compress_token_ids, position_ids], dim=1)
+            # print(f"ae_position_ids:{ae_position_ids}")
             if self.task_config["use_pe"]:
                 outputs = self.decoder(position_ids=ae_position_ids, inputs_embeds=ae_emb)
             else:
                 outputs = self.decoder(inputs_embeds=ae_emb)
             # [B,mem_size+S,V] -> [B,S,V]
             logits = outputs.logits[:, compress_token.size(1):]
-            inputs['ae_targets'] = inputs['input_ids'].contiguous().view(-1).to(logits.device)
-            ae_loss = self.loss_fct(logits.contiguous().view(-1, self.vocab_size), inputs['ae_targets'])
+            inputs['ae_targets'] = inputs['ae_targets'].contiguous().view(-1).to(logits.device)
+            ae_loss = self.loss_fct(logits.contiguous().view(-1, self.vocab_size), inputs['ae_targets'])  # [ae]+context[:-1] -> context[:]
             loss_info["ae_loss"] = ae_loss.item()
             tot_loss += ae_loss
             tot_task += 1
+        
+        ##################################################检查到这里################################################################
 
-        # LM loss
-        # if self.task_config["use_lm_loss"]:
-        #     lm_target_emb = self.model.model.embed_tokens(inputs['lm_targets'][:, :-1])
+
+        if self.task_config["is_pretrain"] and self.task_config["use_lm_loss"]:
+            lm_target_emb = self.decoder.model.embed_tokens(inputs['lm_targets'][:, :-1])
+            bsz, seq_len, emb_size = lm_target_emb.size()
+            # [1,E] -> [1,1,E] -> [B,1,E]
+            expand_lm_token = self.special_tokens[1:2].unsqueeze(0).expand(bsz, 1, emb_size)
+            lm_emb = torch.cat([compress_token, expand_lm_token, lm_target_emb],dim=1)
+
+            # context pids:[1,......,end_idx] 
+            # lm_pids:[end_idx], lm_target_pids:[end_idx+1,......]
+            latter_position_ids = torch.arange(end_idx,end_idx+seq_len+1,device=lm_target_emb.device).unsqueeze(0)
+            lm_position_ids = torch.cat([compress_token_ids,latter_position_ids],dim=1)
+            # print(f"lm_position_ids:{lm_position_ids}")
+            if self.task_config["use_pe"]:
+                outputs = self.decoder(inputs_embeds=lm_emb, position_ids=lm_position_ids)
+            else:
+                outputs = self.decoder(inputs_embeds=lm_emb)
+            # [B,mem_size+S,V] -> [B,S,V]
+            logits = outputs.logits[:, compress_token.size(1):]
+            logits = logits.contiguous().view(-1, self.vocab_size)
+            inputs['lm_targets'] = inputs['lm_targets'].contiguous().view(-1).to(logits.device)
+            lm_loss = self.loss_fct(logits, inputs['lm_targets'])
+            loss_info["lm_loss"] = lm_loss.item()
+            tot_loss += lm_loss
+            tot_task += 1
+
+        ##############################################SFT在之后进行检查####################################################################
+        # # LM loss
+        # if self.task_config["is_sft"] and self.task_config["use_lm_loss"]:
+        #     lm_target_emb = self.decoder.model.embed_tokens(inputs['lm_targets'][:, :-1])
         #     bsz, seq_len, emb_size = lm_target_emb.size()
         #     # [1,E] -> [1,1,E] -> [B,1,E]
         #     expand_lm_token = self.special_tokens[1:2].unsqueeze(0).expand(bsz, 1, emb_size)
         #     lm_emb = torch.cat([compress_token, expand_lm_token,lm_target_emb],dim=1)
         #     latter_position_ids = torch.arange(end_idx+1,end_idx+seq_len+2,device=lm_target_emb.device).unsqueeze(0)
         #     lm_position_ids = torch.cat([compress_token_ids,latter_position_ids-1],dim=1)
+        #     print(f"lm_position_ids:{lm_position_ids}")
         #     if self.task_config["use_pe"]:
         #         outputs = self.decoder(inputs_embeds=lm_emb, position_ids=lm_position_ids)
         #     else:
@@ -110,66 +133,57 @@ class CompressLLM(torch.nn.Module):
         #     tot_loss += lm_loss
         #     tot_task += 1
 
-        if self.task_config["use_lm_loss"]:
-            lm_target_emb = self.model.model.embed_tokens(inputs['lm_targets'][:, :-1])
-            bsz, seq_len, emb_size = lm_target_emb.size()
-            # [1,E] -> [1,1,E] -> [B,1,E]
-            expand_lm_token = self.special_tokens[1:2].unsqueeze(0).expand(bsz, 1, emb_size)
-            lm_emb = torch.cat([compress_token, expand_lm_token,lm_target_emb],dim=1)
-            latter_position_ids = torch.arange(end_idx+1,end_idx+seq_len+2,device=lm_target_emb.device).unsqueeze(0)
-            lm_position_ids = torch.cat([compress_token_ids,latter_position_ids-1],dim=1)
-            if self.task_config["use_pe"]:
-                outputs = self.decoder(inputs_embeds=lm_emb, position_ids=lm_position_ids)
-            else:
-                outputs = self.decoder(inputs_embeds=lm_emb)
-            # [B,mem_size+S,V] -> [B,S,V]
-            logits = outputs.logits[:, compress_token.size(1):]
-            logits = logits.contiguous().view(-1, self.vocab_size)
-            inputs['lm_targets'] = inputs['lm_targets'].contiguous().view(-1).to(logits.device)
-            lm_loss = self.loss_fct(logits, inputs['lm_targets'])
-            loss_info["lm_loss"] = lm_loss.item()
-            tot_loss += lm_loss
-            tot_task += 1
+
         loss = tot_loss/tot_task
         return {"loss":loss, "loss_info":loss_info}
 
-    def compute_num_segments(self, total_length):
+    def compute_num_chunks(self, total_length):
         assert total_length > 0
-        num_segments = math.ceil(total_length / self.segment_len)
-        return num_segments
+        num_chunks = math.ceil(total_length / self.chunk_size)
+        return num_chunks
+
+    def get_uniform_position_ids(self, x_1, x_n, ratio):
+        return torch.arange((x_1 + (ratio - 1) // 2), x_n, step=ratio, device=self.device).unsqueeze(0)
 
     def compress(self, inputs):
         bsz, total_length = inputs['input_ids'].size()
-        inputs['input_ids'] = inputs['input_ids'][:, :total_length - (total_length % self.head_num)]
-        bsz, total_length = inputs['input_ids'].size()
-        # num_segments: 片段个数 | segment_mem_size: 片段中mem的大小 | segment_length：片段长度
-        num_segments = self.compute_num_segments(total_length)
-        segment_length = self.segment_len
+        ######################################应该不需要截断context##########################################
+        # inputs['input_ids'] = inputs['input_ids'][:, :total_length - (total_length % self.compress_ratio)]
+        # bsz, total_length = inputs['input_ids'].size()
+        ##########################################################################################################
+        # num_chunks: 片段个数 | chunk_mem_size: 片段中mem的大小 | chunk_sizegth：片段长度
+        num_chunks = self.compute_num_chunks(total_length)
+        chunk_size = self.chunk_size
         # 收集compress_token
         compress_token = None
         compress_token_ids = None
-        for segment_idx in range(num_segments):
-            # 片段token：0-510 -> 510-1020 -> 1020-1530 -> ...
-            start_idx = segment_idx * segment_length
-            end_idx = min((segment_idx + 1) * segment_length, total_length)
-            segment_input_ids = inputs['input_ids'][:, start_idx:end_idx]
+        for chunk_idx in range(num_chunks):
+            # 片段token：0-509 -> 510-1019 -> 1020-1529 -> ...
+            start_idx = chunk_idx * chunk_size
+            end_idx = min((chunk_idx + 1) * chunk_size, total_length)
+            chunk_input_ids = inputs['input_ids'][:, start_idx:end_idx]
             # ->LlamaForCausalLM->LlamaModel->embed_tokens
-            inputs_embeds = self.model.model.embed_tokens(segment_input_ids)
+            inputs_embeds = self.model.model.embed_tokens(chunk_input_ids)
 
             bsz, seq_len, emb_size = inputs_embeds.size()
+
+            #################################不需要截断##############################################
             # 为了适配最后一个片段不足510
-            mem_size = round((end_idx - start_idx) // self.head_num)
-            mem_tokens = self.mem_tokens[:mem_size, :]
-            expand_mem = mem_tokens.unsqueeze(0).expand(bsz, mem_size, emb_size)
+            # mem_size = round((end_idx - start_idx) // self.compress_ratio)
+            # mem_tokens = self.mem_tokens[:mem_size, :]
+            # expand_mem = mem_tokens.unsqueeze(0).expand(bsz, mem_size, emb_size)
+            ########################################################################################
+            expand_mem = self.mem_tokens.unsqueeze(0).expand(bsz, self.mem_size, emb_size)
+
             encode_inputs_embeds = torch.cat([inputs_embeds, expand_mem], dim=1)
 
             # [1,seq_len]
             position_ids = torch.arange(start_idx + 1, end_idx + 1, device=inputs_embeds.device).unsqueeze(0)
             # [1,mem_size]：compress token position information, the step is compression ratio
-            mem_position_ids = torch.arange((start_idx + (self.head_num + 1) // 2), end_idx + 1, step=self.head_num,
-                                            device=inputs_embeds.device).unsqueeze(0)
+            mem_position_ids = self.get_uniform_position_ids(x_1=start_idx + 1, x_n=start_idx+chunk_size, ratio=self.compress_ratio)
             # [1,seq_len+mem_size]
             encode_position_ids = torch.cat([position_ids, mem_position_ids], dim=1)
+            # print(f"encode_position_ids:{encode_position_ids}")
 
             if compress_token_ids is None:
                 compress_token_ids = mem_position_ids
@@ -177,7 +191,6 @@ class CompressLLM(torch.nn.Module):
                 # 将新的 mem_hidden 拼接到 compress_token
                 compress_token_ids = torch.cat((compress_token_ids, mem_position_ids), dim=1)
 
-            # make three masks：cl_mask、lm_mask、cl_prime_mask
             if self.task_config["use_pe"]:
                 outputs = self.model(position_ids=encode_position_ids, inputs_embeds=encode_inputs_embeds,
                                      output_hidden_states=True)
@@ -186,7 +199,7 @@ class CompressLLM(torch.nn.Module):
 
             hidden_states = outputs.hidden_states[-1]
             # [B,mem_size,emb_size]
-            mem_hidden = hidden_states[:, -mem_size:]
+            mem_hidden = hidden_states[:, -self.mem_size:]
             # 在第一次循环时初始化 compress_token
             if compress_token is None:
                 compress_token = mem_hidden
@@ -194,6 +207,7 @@ class CompressLLM(torch.nn.Module):
                 # 将新的 mem_hidden 拼接到 compress_token
                 compress_token = torch.cat((compress_token, mem_hidden), dim=1)
         return compress_token_ids, compress_token, end_idx
+
     def lm_inference(self,inputs):
         compress_token_ids, compress_token, end_idx = self.compress(inputs)
         lm_target_emb = self.model.model.embed_tokens(inputs['lm_targets'])
@@ -224,7 +238,7 @@ class CompressLLM(torch.nn.Module):
             # [B,V]->[B]
             next_token_id = torch.argmax(logit, dim=-1)
             # [B]->[B,E]->[B,1,E]
-            next_inputs_embeds = self.model.model.embed_tokens(next_token_id).unsqueeze(1).to(lm_target_emb.device)
+            next_inputs_embeds = self.model.model.embed_tokens(next_token_id).unsqueeze(1).to(lm_target_emb.device)  
             # [1, seq_len]/[1,1] -> [1,1]
             next_position_ids = next_position_ids[:,-1:]+1
             generate_text.append(next_token_id.item())
@@ -232,12 +246,6 @@ class CompressLLM(torch.nn.Module):
                 return generate_text
         return generate_text
 
-    def cl_inference(self, inputs):
-        compress_token_ids, compress_token, end_idx = self.compress(inputs)
-        logits = self.compress_head(compress_token).float()
-        logits = logits.contiguous().view(-1, self.vocab_size)
-        generate_text = torch.argmax(logits, dim=-1).tolist()
-        return generate_text
 
     def ae_inference(self, inputs):
         compress_token_ids, compress_token, end_idx = self.compress(inputs)
@@ -320,7 +328,7 @@ class CompressLLM(torch.nn.Module):
 
 def freeze_encoder(model):
     for name, param in model.named_parameters():
-        if name == "compress_head.weight" or name == "mem_tokens" or name == "special_tokens":
+        if name == "mem_tokens" or name == "special_tokens":
             continue
         param.requires_grad = False
 
@@ -344,17 +352,12 @@ def load_model_with_adapter(model_id, task_config, rank, save_path_and_name='ada
     return model
 
 def get_model_for_compress(model_id, task_config, rank):
+
     def add_compress_lora(model, task_config):
         for name, module in model.named_children():
-            if name == "compress_head":
-                continue
             if isinstance(module, nn.Linear) and ((name == "q_proj") or (name == "v_proj")):
                 setattr(model, name, LinearLoraLayer(module.in_features, module.out_features, r=128,
                                                      weight=module.weight.data.clone()))
-            # elif isinstance(module, nn.Embedding):
-            #     setattr(model, name,
-            #             EmbeddingLoraLayer(module.num_embeddings, module.embedding_dim, module.padding_idx, r=128,
-            #                                weight=module.weight.data.clone()))
             else:
                 # Recursively apply this function to submodules
                 add_compress_lora(module, task_config)
@@ -362,11 +365,14 @@ def get_model_for_compress(model_id, task_config, rank):
     model = CompressLLM(
         model_id,
         mem_size=task_config["mem_size"],
-        head_num=task_config["head_num"],
+        compress_ratio=task_config["compress_ratio"],
         device_rank=rank,
         task_config=task_config
     )
+
+    # freeze all the model except mem tokens and special tokens
     freeze_encoder(model)
+    # only add lora to encoder, don't add lora to model.decoder
     add_compress_lora(model.model, task_config)
     return model
 

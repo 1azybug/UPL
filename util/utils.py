@@ -17,7 +17,7 @@ from transformers.models.llama.modeling_llama import LlamaForCausalLM
 import argparse
 import torch.distributed as dist
 from model.modeling import CompressLLM
-from model.lora import LinearLoraLayer, EmbeddingLoraLayer
+from model.lora import LinearLoraLayer
 from torch.optim.lr_scheduler import LinearLR
 from torch.optim.lr_scheduler import ConstantLR
 from torch.optim.lr_scheduler import SequentialLR
@@ -25,14 +25,12 @@ from torch.optim.lr_scheduler import SequentialLR
 def get_wsd_scheduler(optimizer, training_steps):
     W = 300
     S = training_steps - W
-    D = 0
 
     warmup_scheduler = LinearLR(optimizer, start_factor=1/W, total_iters=W)
     stable_scheduler = ConstantLR(optimizer, factor=1.0, total_iters=S)
-    final_scheduler = ConstantLR(optimizer, factor=1.0, total_iters=0)
 
-    milestones = [W, W+S]
-    wsd_scheduler = SequentialLR(optimizer, schedulers=[warmup_scheduler, stable_scheduler, final_scheduler], milestones=milestones)
+    milestones = [W]
+    wsd_scheduler = SequentialLR(optimizer, schedulers=[warmup_scheduler, stable_scheduler], milestones=milestones)
 
     return wsd_scheduler
 
@@ -80,18 +78,23 @@ def count_parameters(model, config):
     trainable_percentage = (trainable_params / total_params) * 100
     logging.info(f"Trainable parameters percentage: {trainable_percentage:.2f}%")
 
+    # trainable_params = [name for name, param in model.named_parameters() if param.requires_grad]
+    # print("Trainable parameters:")
+    # for name in trainable_params:
+    #     print(name)
+
 
 
 def training_step(ddp_model, inputs, rank, accumulation_steps):
     # inputs = {key:value.to(rank) for key,value in inputs.items()}
-    inputs = {key:value.to(rank) if value is not None else None for key,value in inputs.items()}
+    inputs = {key:(value.to(rank) if value is not None else None) for key,value in inputs.items()}
     output = ddp_model(inputs=inputs)
     loss = output["loss"]
     loss /= accumulation_steps
     loss.backward()
     # 计算当前的梯度范数
-    grad_norm = calculate_gradient_norm(ddp_model)
-    output["loss_info"]["grad_norm"] = grad_norm
+    # grad_norm = calculate_gradient_norm(ddp_model)
+    # output["loss_info"]["grad_norm"] = grad_norm
     return output["loss_info"]
 
 
