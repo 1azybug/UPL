@@ -10,22 +10,18 @@ class CompressDataset(IterableDataset):
     def __iter__(self):
         input_ids = []
         ae_targets = []
-        compress_targets = []
         lm_targets = []
         for example in self.examples:
             input_ids.append(example["inputs"])
             ae_targets.append(example["inputs"])
-            compress_targets.append(example["inputs"])
             lm_targets.append(example["lm_target"])
                 
             if self.batch_size == len(input_ids):
                 yield {"input_ids":torch.stack(input_ids),
                        "ae_targets":torch.stack(ae_targets),
-                       "compress_targets":torch.stack(compress_targets),
                        "lm_targets":torch.stack(lm_targets)}
                 input_ids = []
                 ae_targets = []
-                compress_targets = []
                 lm_targets = []
                 
                 
