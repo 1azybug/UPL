@@ -249,24 +249,26 @@ class CompressLLM(torch.nn.Module):
 
     def ae_inference(self, inputs):
         compress_token_ids, compress_token, end_idx = self.compress(inputs)
-        bsz, total_length, emb_size = inputs['input_ids'].size()
-        inputs_embeds = self.model.model.embed_tokens(inputs['input_ids'])
+        bsz, tot_mem_size, emb_size = compress_token.size()
         # [1,E] -> [1,1,E] -> [B,1,E]
         expand_ae_token = self.special_tokens[0:1].unsqueeze(0).expand(bsz, 1, emb_size)
 
-        #                  [B,mem_size,E];   [B,1,E]
+        #                  [B,tot_mem_size,E];   [B,1,E]
         ae_emb = torch.cat([compress_token, expand_ae_token], dim=1)
-        position_ids = torch.arange(1, inputs_embeds.size(1)+1, device=inputs_embeds.device).unsqueeze(0)
-        ae_position_ids = torch.cat([compress_token_ids, position_ids[:, :1] - 1], dim=1)
+
+        # ae_pid:[0]  shape:[1]->[1,1]->[B,1]
+        position_ids = torch.arange(0, 1, device=compress_token.device).unsqueeze(0).expand(bsz, 1)
+        ae_position_ids = torch.cat([compress_token_ids, position_ids], dim=1)
 
         generate_text = []
         past_key_values = None
         next_inputs_embeds = ae_emb.clone()
         next_position_ids = ae_position_ids.clone()
 
-        for i in range(1024):
+        for i in range(inputs['input_ids'].size(-1)):
+            # print(f"next_pids:{next_position_ids}")
             if self.task_config["use_pe"]:
-                out = self.decoder(position_ids=next_position_ids, inputs_embeds=next_inputs_embeds,past_key_values=past_key_values, use_cache=True)
+                out = self.decoder(position_ids=next_position_ids, inputs_embeds=next_inputs_embeds, past_key_values=past_key_values, use_cache=True)
             else:
                 out = self.decoder(inputs_embeds=next_inputs_embeds, past_key_values=past_key_values, use_cache=True)
             # [B,S,V] -> [B,V]
@@ -275,9 +277,12 @@ class CompressLLM(torch.nn.Module):
             # [B,V]->[B]
             next_token_id = torch.argmax(logit, dim=-1)
             # [B]->[B,E]->[B,1,E]
-            next_inputs_embeds = self.model.model.embed_tokens(next_token_id).unsqueeze(1).to(inputs_embeds.device)
-            next_position_ids = position_ids[:, i:i + 1]
+            next_inputs_embeds = self.decoder.model.embed_tokens(next_token_id).unsqueeze(1).to(compress_token.device)
+            # next_position_ids:[B,S] -> [B,1]
+            next_position_ids = next_position_ids[:,-1:]+1
             generate_text.append(next_token_id.item())
+            if next_token_id.item() == 2:
+                return generate_text
         return generate_text
 
 

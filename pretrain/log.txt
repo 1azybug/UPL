@@ -1,17 +1,109 @@
-2025-03-17 20:11:28 - INFO - [INFO] rank1 training examples: [1, 3, 5, 7] ... [2025-03-17 20:11:28 - INFO - [INFO] rank0 training examples: [0, 2, 4, 6] ... [31992, 31994, 31996, 31998]| example_nums:16000 | training_steps:2000
-2025-03-17 20:11:33 - INFO - Total parameters: 2218332160
-2025-03-17 20:11:33 - INFO - Trainable parameters: 18235392
-2025-03-17 20:11:33 - INFO - Embedding parameters: 0
-2025-03-17 20:11:33 - INFO - non-Embedding parameters: 18235392
-2025-03-17 20:11:33 - INFO - Embedding parameters percentage: 0.00%
-2025-03-17 20:11:33 - INFO - Trainable parameters percentage: 0.82%
-2025-03-17 20:14:20 - INFO - {'run_time(hours)': 0.046170193950335184, 'total_steps': 2000, 'steps': 100.0, 'training_loss': {'ae_loss': 2.496979236602783, 'lm_loss': 1.9326772689819336}, 'learning_rate': 3.322333333333335e-05}
-2025-03-17 20:18:02 - INFO - {'run_time(hours)': 0.10782243960433537, 'total_steps': 2000, 'steps': 200.0, 'training_loss': {'ae_loss': 2.968053102493286, 'lm_loss': 2.769160270690918}, 'learning_rate': 6.644555555555568e-05}
-2025-03-17 20:22:11 - INFO - {'run_time(hours)': 0.1769135969214969, 'total_steps': 2000, 'steps': 300.0, 'training_loss': {'ae_loss': 2.8194451332092285, 'lm_loss': 2.9832212924957275}, 'learning_rate': 9.966777777777791e-05}
-2025-03-17 20:26:22 - INFO - {'run_time(hours)': 0.2466863145430883, 'total_steps': 2000, 'steps': 400.0, 'training_loss': {'ae_loss': 2.7722668647766113, 'lm_loss': 3.157179832458496}, 'learning_rate': 0.0001}
-2025-03-17 20:30:12 - INFO - {'run_time(hours)': 0.3107544634739558, 'total_steps': 2000, 'steps': 500.0, 'training_loss': {'ae_loss': 1.068818211555481, 'lm_loss': 2.4707906246185303}, 'learning_rate': 0.0001}
-2025-03-17 20:33:35 - INFO - {'run_time(hours)': 0.3670560859971576, 'total_steps': 2000, 'steps': 600.0, 'training_loss': {'ae_loss': 0.5605186223983765, 'lm_loss': 2.2281453609466553}, 'learning_rate': 0.0001}
-2025-03-17 20:37:24 - INFO - {'run_time(hours)': 0.4305435979366303, 'total_steps': 2000, 'steps': 700.0, 'training_loss': {'ae_loss': 0.6063223481178284, 'lm_loss': 2.3322858810424805}, 'learning_rate': 0.0001}
-2025-03-17 20:41:47 - INFO - {'run_time(hours)': 0.5037413944800695, 'total_steps': 2000, 'steps': 800.0, 'training_loss': {'ae_loss': 0.5650205016136169, 'lm_loss': 2.0294559001922607}, 'learning_rate': 0.0001}
-2025-03-17 20:46:20 - INFO - {'run_time(hours)': 0.5796594154172473, 'total_steps': 2000, 'steps': 900.0, 'training_loss': {'ae_loss': 0.4816097021102905, 'lm_loss': 1.8474915027618408}, 'learning_rate': 0.0001}
-2025-03-17 20:51:05 - INFO - {'run_time(hours)': 0.6586641158660252, 'total_steps': 2000, 'steps': 1000.0, 'training_loss': {'ae_loss': 0.9949114322662354, 'lm_loss': 2.2869818210601807}, 'learning_rate': 0.0001}
+2025-03-18 00:16:43 - INFO - [INFO] rank1 training examples: [1, 5, 9, 13] ... [159985, 159989, 159993, 159997]| example_nums:40000 | training_steps:10000
+
+... [159984, 159988, 159992, 159996]| example_nums:40000 | training_steps:10000
+2025-03-18 00:17:09 - INFO - Total parameters: 2218332160
+2025-03-18 00:17:09 - INFO - Trainable parameters: 18235392
+2025-03-18 00:17:09 - INFO - Embedding parameters: 0
+2025-03-18 00:17:09 - INFO - non-Embedding parameters: 18235392
+2025-03-18 00:17:09 - INFO - Embedding parameters percentage: 0.00%
+2025-03-18 00:17:09 - INFO - Trainable parameters percentage: 0.82%
+2025-03-18 00:18:30 - INFO - {'run_time(hours)': 0.0219269722700119, 'total_steps': 10000, 'steps': 100.0, 'training_loss': {'ae_loss': 3.1640517711639404, 'lm_loss': 3.311859369277954}, 'learning_rate': 3.322333333333335e-05}
+2025-03-18 00:19:48 - INFO - {'run_time(hours)': 0.04379072666168213, 'total_steps': 10000, 'steps': 200.0, 'training_loss': {'ae_loss': 2.0058939456939697, 'lm_loss': 2.494393825531006}, 'learning_rate': 6.644555555555568e-05}
+2025-03-18 00:21:06 - INFO - {'run_time(hours)': 0.06545828918615977, 'total_steps': 10000, 'steps': 300.0, 'training_loss': {'ae_loss': 1.9413293600082397, 'lm_loss': 2.537597894668579}, 'learning_rate': 9.966777777777791e-05}
+2025-03-18 00:22:25 - INFO - {'run_time(hours)': 0.08733376820882162, 'total_steps': 10000, 'steps': 400.0, 'training_loss': {'ae_loss': 2.0563511848449707, 'lm_loss': 1.8691003322601318}, 'learning_rate': 0.0001}
+2025-03-18 00:23:43 - INFO - {'run_time(hours)': 0.1090131268898646, 'total_steps': 10000, 'steps': 500.0, 'training_loss': {'ae_loss': 2.5227267742156982, 'lm_loss': 1.8362703323364258}, 'learning_rate': 0.0001}
+2025-03-18 00:25:02 - INFO - {'run_time(hours)': 0.130759686032931, 'total_steps': 10000, 'steps': 600.0, 'training_loss': {'ae_loss': 2.9002223014831543, 'lm_loss': 2.857790470123291}, 'learning_rate': 0.0001}
+2025-03-18 00:26:19 - INFO - {'run_time(hours)': 0.15227296584182315, 'total_steps': 10000, 'steps': 700.0, 'training_loss': {'ae_loss': 1.4029954671859741, 'lm_loss': 1.8045787811279297}, 'learning_rate': 0.0001}
+2025-03-18 00:27:39 - INFO - {'run_time(hours)': 0.17442850834793514, 'total_steps': 10000, 'steps': 800.0, 'training_loss': {'ae_loss': 0.5472167730331421, 'lm_loss': 2.963057518005371}, 'learning_rate': 0.0001}
+2025-03-18 00:29:04 - INFO - {'run_time(hours)': 0.198033650053872, 'total_steps': 10000, 'steps': 900.0, 'training_loss': {'ae_loss': 0.4258926212787628, 'lm_loss': 2.390092372894287}, 'learning_rate': 0.0001}
+2025-03-18 00:30:29 - INFO - {'run_time(hours)': 0.22163159661822848, 'total_steps': 10000, 'steps': 1000.0, 'training_loss': {'ae_loss': 0.3232717216014862, 'lm_loss': 2.1979076862335205}, 'learning_rate': 0.0001}
+2025-03-18 00:31:54 - INFO - {'run_time(hours)': 0.2453271817498737, 'total_steps': 10000, 'steps': 1100.0, 'training_loss': {'ae_loss': 0.33541440963745117, 'lm_loss': 2.422307014465332}, 'learning_rate': 0.0001}
+2025-03-18 00:33:20 - INFO - {'run_time(hours)': 0.2691243173678716, 'total_steps': 10000, 'steps': 1200.0, 'training_loss': {'ae_loss': 0.718800961971283, 'lm_loss': 2.776068687438965}, 'learning_rate': 0.0001}
+2025-03-18 00:34:46 - INFO - {'run_time(hours)': 0.29300324009524453, 'total_steps': 10000, 'steps': 1300.0, 'training_loss': {'ae_loss': 0.3107852339744568, 'lm_loss': 2.0353548526763916}, 'learning_rate': 0.0001}
+2025-03-18 00:36:12 - INFO - {'run_time(hours)': 0.3169902463754018, 'total_steps': 10000, 'steps': 1400.0, 'training_loss': {'ae_loss': 0.16448147594928741, 'lm_loss': 2.0610909461975098}, 'learning_rate': 0.0001}
+2025-03-18 00:37:38 - INFO - {'run_time(hours)': 0.3409624214967092, 'total_steps': 10000, 'steps': 1500.0, 'training_loss': {'ae_loss': 0.3439759910106659, 'lm_loss': 2.2238006591796875}, 'learning_rate': 0.0001}
+2025-03-18 00:39:05 - INFO - {'run_time(hours)': 0.36497501267327204, 'total_steps': 10000, 'steps': 1600.0, 'training_loss': {'ae_loss': 0.20755860209465027, 'lm_loss': 1.9607439041137695}, 'learning_rate': 0.0001}
+2025-03-18 00:40:31 - INFO - {'run_time(hours)': 0.3888360101646847, 'total_steps': 10000, 'steps': 1700.0, 'training_loss': {'ae_loss': 0.3331148326396942, 'lm_loss': 2.0735504627227783}, 'learning_rate': 0.0001}
+2025-03-18 00:41:57 - INFO - {'run_time(hours)': 0.41284385310279, 'total_steps': 10000, 'steps': 1800.0, 'training_loss': {'ae_loss': 0.19212673604488373, 'lm_loss': 2.2656962871551514}, 'learning_rate': 0.0001}
+2025-03-18 00:43:24 - INFO - {'run_time(hours)': 0.43698754052321115, 'total_steps': 10000, 'steps': 1900.0, 'training_loss': {'ae_loss': 0.33241352438926697, 'lm_loss': 2.4341976642608643}, 'learning_rate': 0.0001}
+2025-03-18 00:44:51 - INFO - {'run_time(hours)': 0.4612414255407121, 'total_steps': 10000, 'steps': 2000.0, 'training_loss': {'ae_loss': 0.20549774169921875, 'lm_loss': 2.038429021835327}, 'learning_rate': 0.0001}
+2025-03-18 00:46:15 - INFO - {'run_time(hours)': 0.4845117795467377, 'total_steps': 10000, 'steps': 2100.0, 'training_loss': {'ae_loss': 0.2698957026004791, 'lm_loss': 2.659571886062622}, 'learning_rate': 0.0001}
+2025-03-18 00:47:37 - INFO - {'run_time(hours)': 0.5073454040288925, 'total_steps': 10000, 'steps': 2200.0, 'training_loss': {'ae_loss': 0.3045395612716675, 'lm_loss': 2.1265487670898438}, 'learning_rate': 0.0001}
+2025-03-18 00:48:59 - INFO - {'run_time(hours)': 0.5300736905468835, 'total_steps': 10000, 'steps': 2300.0, 'training_loss': {'ae_loss': 0.26096928119659424, 'lm_loss': 2.0223755836486816}, 'learning_rate': 0.0001}
+2025-03-18 00:50:21 - INFO - {'run_time(hours)': 0.5527746401892768, 'total_steps': 10000, 'steps': 2400.0, 'training_loss': {'ae_loss': 0.17375805974006653, 'lm_loss': 2.0755701065063477}, 'learning_rate': 0.0001}
+2025-03-18 00:51:43 - INFO - {'run_time(hours)': 0.5755405864450667, 'total_steps': 10000, 'steps': 2500.0, 'training_loss': {'ae_loss': 0.23459041118621826, 'lm_loss': 2.3574657440185547}, 'learning_rate': 0.0001}
+2025-03-18 00:53:05 - INFO - {'run_time(hours)': 0.598418542014228, 'total_steps': 10000, 'steps': 2600.0, 'training_loss': {'ae_loss': 0.19114139676094055, 'lm_loss': 2.1546943187713623}, 'learning_rate': 0.0001}
+2025-03-18 00:54:28 - INFO - {'run_time(hours)': 0.6214720746543673, 'total_steps': 10000, 'steps': 2700.0, 'training_loss': {'ae_loss': 0.22287799417972565, 'lm_loss': 2.4193992614746094}, 'learning_rate': 0.0001}
+2025-03-18 00:55:52 - INFO - {'run_time(hours)': 0.6447907285557852, 'total_steps': 10000, 'steps': 2800.0, 'training_loss': {'ae_loss': 0.34298643469810486, 'lm_loss': 2.2756588459014893}, 'learning_rate': 0.0001}
+2025-03-18 00:57:15 - INFO - {'run_time(hours)': 0.6679284675916036, 'total_steps': 10000, 'steps': 2900.0, 'training_loss': {'ae_loss': 0.19861836731433868, 'lm_loss': 2.6541671752929688}, 'learning_rate': 0.0001}
+2025-03-18 00:58:39 - INFO - {'run_time(hours)': 0.6910920161671109, 'total_steps': 10000, 'steps': 3000.0, 'training_loss': {'ae_loss': 0.2798331677913666, 'lm_loss': 2.872217893600464}, 'learning_rate': 0.0001}
+2025-03-18 01:00:02 - INFO - {'run_time(hours)': 0.7141777533955044, 'total_steps': 10000, 'steps': 3100.0, 'training_loss': {'ae_loss': 0.1614004522562027, 'lm_loss': 2.73893404006958}, 'learning_rate': 0.0001}
+2025-03-18 01:01:25 - INFO - {'run_time(hours)': 0.7373757129245334, 'total_steps': 10000, 'steps': 3200.0, 'training_loss': {'ae_loss': 0.33364757895469666, 'lm_loss': 2.992497444152832}, 'learning_rate': 0.0001}
+2025-03-18 01:02:49 - INFO - {'run_time(hours)': 0.7607178820504082, 'total_steps': 10000, 'steps': 3300.0, 'training_loss': {'ae_loss': 0.26491665840148926, 'lm_loss': 2.8404409885406494}, 'learning_rate': 0.0001}
+2025-03-18 01:04:15 - INFO - {'run_time(hours)': 0.7845042767127355, 'total_steps': 10000, 'steps': 3400.0, 'training_loss': {'ae_loss': 0.3263970613479614, 'lm_loss': 3.040386199951172}, 'learning_rate': 0.0001}
+2025-03-18 01:05:41 - INFO - {'run_time(hours)': 0.8083207586738799, 'total_steps': 10000, 'steps': 3500.0, 'training_loss': {'ae_loss': 0.4373697340488434, 'lm_loss': 1.3370435237884521}, 'learning_rate': 0.0001}
+2025-03-18 01:07:07 - INFO - {'run_time(hours)': 0.8322032988733715, 'total_steps': 10000, 'steps': 3600.0, 'training_loss': {'ae_loss': 0.32886141538619995, 'lm_loss': 2.541769504547119}, 'learning_rate': 0.0001}
+2025-03-18 01:08:38 - INFO - {'run_time(hours)': 0.8574837355481254, 'total_steps': 10000, 'steps': 3700.0, 'training_loss': {'ae_loss': 0.19561602175235748, 'lm_loss': 2.1150052547454834}, 'learning_rate': 0.0001}
+2025-03-18 01:10:11 - INFO - {'run_time(hours)': 0.8833445938428243, 'total_steps': 10000, 'steps': 3800.0, 'training_loss': {'ae_loss': 0.20102092623710632, 'lm_loss': 2.219705104827881}, 'learning_rate': 0.0001}
+2025-03-18 01:11:44 - INFO - {'run_time(hours)': 0.9091991872257656, 'total_steps': 10000, 'steps': 3900.0, 'training_loss': {'ae_loss': 0.26340118050575256, 'lm_loss': 1.7938883304595947}, 'learning_rate': 0.0001}
+2025-03-18 01:13:17 - INFO - {'run_time(hours)': 0.9351630634069443, 'total_steps': 10000, 'steps': 4000.0, 'training_loss': {'ae_loss': 0.259795218706131, 'lm_loss': 2.483896493911743}, 'learning_rate': 0.0001}
+2025-03-18 01:14:52 - INFO - {'run_time(hours)': 0.9614454925722546, 'total_steps': 10000, 'steps': 4100.0, 'training_loss': {'ae_loss': 0.24369968473911285, 'lm_loss': 1.77466881275177}, 'learning_rate': 0.0001}
+2025-03-18 01:16:27 - INFO - {'run_time(hours)': 0.9877003529998991, 'total_steps': 10000, 'steps': 4200.0, 'training_loss': {'ae_loss': 0.2580436170101166, 'lm_loss': 2.1668314933776855}, 'learning_rate': 0.0001}
+2025-03-18 01:18:01 - INFO - {'run_time(hours)': 1.0139663146601783, 'total_steps': 10000, 'steps': 4300.0, 'training_loss': {'ae_loss': 0.25715047121047974, 'lm_loss': 2.2585060596466064}, 'learning_rate': 0.0001}
+2025-03-18 01:19:35 - INFO - {'run_time(hours)': 1.0401421424415376, 'total_steps': 10000, 'steps': 4400.0, 'training_loss': {'ae_loss': 0.37663766741752625, 'lm_loss': 2.226191759109497}, 'learning_rate': 0.0001}
+2025-03-18 01:21:10 - INFO - {'run_time(hours)': 1.0663917158047358, 'total_steps': 10000, 'steps': 4500.0, 'training_loss': {'ae_loss': 0.31479305028915405, 'lm_loss': 2.2183778285980225}, 'learning_rate': 0.0001}
+2025-03-18 01:22:45 - INFO - {'run_time(hours)': 1.0928348478343752, 'total_steps': 10000, 'steps': 4600.0, 'training_loss': {'ae_loss': 0.47083497047424316, 'lm_loss': 2.851492404937744}, 'learning_rate': 0.0001}
+2025-03-18 01:24:22 - INFO - {'run_time(hours)': 1.1198481996191874, 'total_steps': 10000, 'steps': 4700.0, 'training_loss': {'ae_loss': 0.6852967143058777, 'lm_loss': 1.3844038248062134}, 'learning_rate': 0.0001}
+2025-03-18 01:26:02 - INFO - {'run_time(hours)': 1.1474217456579208, 'total_steps': 10000, 'steps': 4800.0, 'training_loss': {'ae_loss': 0.34613677859306335, 'lm_loss': 2.561868906021118}, 'learning_rate': 0.0001}
+2025-03-18 01:27:41 - INFO - {'run_time(hours)': 1.1751499256160525, 'total_steps': 10000, 'steps': 4900.0, 'training_loss': {'ae_loss': 0.5269656777381897, 'lm_loss': 2.1322169303894043}, 'learning_rate': 0.0001}
+2025-03-18 01:29:21 - INFO - {'run_time(hours)': 1.2029272425836988, 'total_steps': 10000, 'steps': 5000.0, 'training_loss': {'ae_loss': 0.31581249833106995, 'lm_loss': 1.1608372926712036}, 'learning_rate': 0.0001}
+2025-03-18 01:31:01 - INFO - {'run_time(hours)': 1.2306319923533333, 'total_steps': 10000, 'steps': 5100.0, 'training_loss': {'ae_loss': 0.6181358098983765, 'lm_loss': 1.9961105585098267}, 'learning_rate': 0.0001}
+2025-03-18 01:32:51 - INFO - {'run_time(hours)': 1.2611803695228365, 'total_steps': 10000, 'steps': 5200.0, 'training_loss': {'ae_loss': 0.7526623010635376, 'lm_loss': 2.668545961380005}, 'learning_rate': 0.0001}
+2025-03-18 01:35:01 - INFO - {'run_time(hours)': 1.2971882155868741, 'total_steps': 10000, 'steps': 5300.0, 'training_loss': {'ae_loss': 0.5501846075057983, 'lm_loss': 2.4051146507263184}, 'learning_rate': 0.0001}
+2025-03-18 01:37:11 - INFO - {'run_time(hours)': 1.3334141759739981, 'total_steps': 10000, 'steps': 5400.0, 'training_loss': {'ae_loss': 0.530656099319458, 'lm_loss': 2.350001335144043}, 'learning_rate': 0.0001}
+2025-03-18 01:39:21 - INFO - {'run_time(hours)': 1.369425028430091, 'total_steps': 10000, 'steps': 5500.0, 'training_loss': {'ae_loss': 0.49626049399375916, 'lm_loss': 2.0605340003967285}, 'learning_rate': 0.0001}
+2025-03-18 01:41:31 - INFO - {'run_time(hours)': 1.4055076369974349, 'total_steps': 10000, 'steps': 5600.0, 'training_loss': {'ae_loss': 0.821599543094635, 'lm_loss': 2.07562255859375}, 'learning_rate': 0.0001}
+2025-03-18 01:43:43 - INFO - {'run_time(hours)': 1.4422064423561096, 'total_steps': 10000, 'steps': 5700.0, 'training_loss': {'ae_loss': 0.438646525144577, 'lm_loss': 1.8507503271102905}, 'learning_rate': 0.0001}
+2025-03-18 01:45:54 - INFO - {'run_time(hours)': 1.4787201753589843, 'total_steps': 10000, 'steps': 5800.0, 'training_loss': {'ae_loss': 0.6315843462944031, 'lm_loss': 2.065016508102417}, 'learning_rate': 0.0001}
+2025-03-18 01:48:15 - INFO - {'run_time(hours)': 1.5177245805660884, 'total_steps': 10000, 'steps': 5900.0, 'training_loss': {'ae_loss': 0.7340672612190247, 'lm_loss': 2.565129280090332}, 'learning_rate': 0.0001}
+2025-03-18 01:50:37 - INFO - {'run_time(hours)': 1.557176671690411, 'total_steps': 10000, 'steps': 6000.0, 'training_loss': {'ae_loss': 0.7975367307662964, 'lm_loss': 2.1246554851531982}, 'learning_rate': 0.0001}
+2025-03-18 01:53:01 - INFO - {'run_time(hours)': 1.59726298391819, 'total_steps': 10000, 'steps': 6100.0, 'training_loss': {'ae_loss': 0.20745493471622467, 'lm_loss': 1.1954271793365479}, 'learning_rate': 0.0001}
+2025-03-18 01:55:25 - INFO - {'run_time(hours)': 1.637282842596372, 'total_steps': 10000, 'steps': 6200.0, 'training_loss': {'ae_loss': 0.9509813785552979, 'lm_loss': 2.1771035194396973}, 'learning_rate': 0.0001}
+2025-03-18 01:57:48 - INFO - {'run_time(hours)': 1.6769923800230027, 'total_steps': 10000, 'steps': 6300.0, 'training_loss': {'ae_loss': 0.9110281467437744, 'lm_loss': 2.597304582595825}, 'learning_rate': 0.0001}
+2025-03-18 02:00:12 - INFO - {'run_time(hours)': 1.716996770567364, 'total_steps': 10000, 'steps': 6400.0, 'training_loss': {'ae_loss': 0.9784502983093262, 'lm_loss': 1.9125620126724243}, 'learning_rate': 0.0001}
+2025-03-18 02:02:36 - INFO - {'run_time(hours)': 1.757053285572264, 'total_steps': 10000, 'steps': 6500.0, 'training_loss': {'ae_loss': 0.432134211063385, 'lm_loss': 2.1271355152130127}, 'learning_rate': 0.0001}
+2025-03-18 02:04:59 - INFO - {'run_time(hours)': 1.7967182791895338, 'total_steps': 10000, 'steps': 6600.0, 'training_loss': {'ae_loss': 1.0093053579330444, 'lm_loss': 2.6066291332244873}, 'learning_rate': 0.0001}
+2025-03-18 02:07:22 - INFO - {'run_time(hours)': 1.8365080482429927, 'total_steps': 10000, 'steps': 6700.0, 'training_loss': {'ae_loss': 1.00478994846344, 'lm_loss': 2.981502056121826}, 'learning_rate': 0.0001}
+2025-03-18 02:09:47 - INFO - {'run_time(hours)': 1.8767102721002367, 'total_steps': 10000, 'steps': 6800.0, 'training_loss': {'ae_loss': 1.085828423500061, 'lm_loss': 2.7407724857330322}, 'learning_rate': 0.0001}
+2025-03-18 02:12:15 - INFO - {'run_time(hours)': 1.9177131731642618, 'total_steps': 10000, 'steps': 6900.0, 'training_loss': {'ae_loss': 0.5096953511238098, 'lm_loss': 0.7922331690788269}, 'learning_rate': 0.0001}
+2025-03-18 02:14:44 - INFO - {'run_time(hours)': 1.9592920190095902, 'total_steps': 10000, 'steps': 7000.0, 'training_loss': {'ae_loss': 1.1758471727371216, 'lm_loss': 1.928902268409729}, 'learning_rate': 0.0001}
+2025-03-18 02:17:25 - INFO - {'run_time(hours)': 2.0040142090453044, 'total_steps': 10000, 'steps': 7100.0, 'training_loss': {'ae_loss': 1.1007716655731201, 'lm_loss': 2.6649880409240723}, 'learning_rate': 0.0001}
+2025-03-18 02:20:07 - INFO - {'run_time(hours)': 2.0488538383775285, 'total_steps': 10000, 'steps': 7200.0, 'training_loss': {'ae_loss': 1.2319544553756714, 'lm_loss': 2.7934370040893555}, 'learning_rate': 0.0001}
+2025-03-18 02:22:49 - INFO - {'run_time(hours)': 2.093869698378775, 'total_steps': 10000, 'steps': 7300.0, 'training_loss': {'ae_loss': 0.8424072265625, 'lm_loss': 2.071653366088867}, 'learning_rate': 0.0001}
+2025-03-18 02:25:32 - INFO - {'run_time(hours)': 2.1392031539148753, 'total_steps': 10000, 'steps': 7400.0, 'training_loss': {'ae_loss': 0.9704155921936035, 'lm_loss': 2.1307153701782227}, 'learning_rate': 0.0001}
+2025-03-18 02:28:17 - INFO - {'run_time(hours)': 2.1849825516674253, 'total_steps': 10000, 'steps': 7500.0, 'training_loss': {'ae_loss': 0.9789870977401733, 'lm_loss': 2.1186790466308594}, 'learning_rate': 0.0001}
+2025-03-18 02:31:01 - INFO - {'run_time(hours)': 2.230655022594664, 'total_steps': 10000, 'steps': 7600.0, 'training_loss': {'ae_loss': 1.092174768447876, 'lm_loss': 2.328139543533325}, 'learning_rate': 0.0001}
+2025-03-18 02:33:48 - INFO - {'run_time(hours)': 2.27701798942354, 'total_steps': 10000, 'steps': 7700.0, 'training_loss': {'ae_loss': 1.3756831884384155, 'lm_loss': 2.6728358268737793}, 'learning_rate': 0.0001}
+2025-03-18 02:36:40 - INFO - {'run_time(hours)': 2.324727662536833, 'total_steps': 10000, 'steps': 7800.0, 'training_loss': {'ae_loss': 1.478026032447815, 'lm_loss': 2.4559807777404785}, 'learning_rate': 0.0001}
+2025-03-18 02:39:36 - INFO - {'run_time(hours)': 2.373691016899215, 'total_steps': 10000, 'steps': 7900.0, 'training_loss': {'ae_loss': 0.18158318102359772, 'lm_loss': 0.6300511360168457}, 'learning_rate': 0.0001}
+2025-03-18 02:42:32 - INFO - {'run_time(hours)': 2.422444151375029, 'total_steps': 10000, 'steps': 8000.0, 'training_loss': {'ae_loss': 1.0906635522842407, 'lm_loss': 2.1492042541503906}, 'learning_rate': 0.0001}
+2025-03-18 02:45:29 - INFO - {'run_time(hours)': 2.4717689745955997, 'total_steps': 10000, 'steps': 8100.0, 'training_loss': {'ae_loss': 1.1714630126953125, 'lm_loss': 2.1340107917785645}, 'learning_rate': 0.0001}
+2025-03-18 02:48:28 - INFO - {'run_time(hours)': 2.521476919054985, 'total_steps': 10000, 'steps': 8200.0, 'training_loss': {'ae_loss': 1.1553491353988647, 'lm_loss': 2.243734359741211}, 'learning_rate': 0.0001}
+2025-03-18 02:51:28 - INFO - {'run_time(hours)': 2.571505098607805, 'total_steps': 10000, 'steps': 8300.0, 'training_loss': {'ae_loss': 1.1565252542495728, 'lm_loss': 1.1228383779525757}, 'learning_rate': 0.0001}
+2025-03-18 02:54:32 - INFO - {'run_time(hours)': 2.622433290945159, 'total_steps': 10000, 'steps': 8400.0, 'training_loss': {'ae_loss': 1.4269449710845947, 'lm_loss': 2.6327264308929443}, 'learning_rate': 0.0001}
+2025-03-18 02:57:41 - INFO - {'run_time(hours)': 2.675003143284056, 'total_steps': 10000, 'steps': 8500.0, 'training_loss': {'ae_loss': 1.3578336238861084, 'lm_loss': 1.3992183208465576}, 'learning_rate': 0.0001}
+2025-03-18 03:00:53 - INFO - {'run_time(hours)': 2.728324529859755, 'total_steps': 10000, 'steps': 8600.0, 'training_loss': {'ae_loss': 1.4030489921569824, 'lm_loss': 2.2613348960876465}, 'learning_rate': 0.0001}
+2025-03-18 03:04:35 - INFO - {'run_time(hours)': 2.790076055261824, 'total_steps': 10000, 'steps': 8700.0, 'training_loss': {'ae_loss': 1.3217761516571045, 'lm_loss': 2.075889825820923}, 'learning_rate': 0.0001}
+2025-03-18 03:08:21 - INFO - {'run_time(hours)': 2.8528716282712088, 'total_steps': 10000, 'steps': 8800.0, 'training_loss': {'ae_loss': 1.6958904266357422, 'lm_loss': 2.4473512172698975}, 'learning_rate': 0.0001}
+2025-03-18 03:12:18 - INFO - {'run_time(hours)': 2.9185974409182864, 'total_steps': 10000, 'steps': 8900.0, 'training_loss': {'ae_loss': 1.7120847702026367, 'lm_loss': 2.3060660362243652}, 'learning_rate': 0.0001}
+2025-03-18 03:16:25 - INFO - {'run_time(hours)': 2.9873847383923002, 'total_steps': 10000, 'steps': 9000.0, 'training_loss': {'ae_loss': 1.855102300643921, 'lm_loss': 2.90647292137146}, 'learning_rate': 0.0001}
+2025-03-18 03:20:44 - INFO - {'run_time(hours)': 3.05918908920553, 'total_steps': 10000, 'steps': 9100.0, 'training_loss': {'ae_loss': 1.4972673654556274, 'lm_loss': 2.291147232055664}, 'learning_rate': 0.0001}
+2025-03-18 03:25:06 - INFO - {'run_time(hours)': 3.132137449251281, 'total_steps': 10000, 'steps': 9200.0, 'training_loss': {'ae_loss': 1.76417076587677, 'lm_loss': 1.9427540302276611}, 'learning_rate': 0.0001}
+2025-03-18 03:29:40 - INFO - {'run_time(hours)': 3.207983574602339, 'total_steps': 10000, 'steps': 9300.0, 'training_loss': {'ae_loss': 1.3973205089569092, 'lm_loss': 2.074573040008545}, 'learning_rate': 0.0001}
+2025-03-18 03:34:19 - INFO - {'run_time(hours)': 3.2855765830808217, 'total_steps': 10000, 'steps': 9400.0, 'training_loss': {'ae_loss': 1.2442225217819214, 'lm_loss': 0.6630178093910217}, 'learning_rate': 0.0001}
+2025-03-18 03:39:02 - INFO - {'run_time(hours)': 3.36430730495188, 'total_steps': 10000, 'steps': 9500.0, 'training_loss': {'ae_loss': 1.5358164310455322, 'lm_loss': 0.9185305833816528}, 'learning_rate': 0.0001}
+2025-03-18 03:44:03 - INFO - {'run_time(hours)': 3.4479383077224095, 'total_steps': 10000, 'steps': 9600.0, 'training_loss': {'ae_loss': 1.8488342761993408, 'lm_loss': 2.248610734939575}, 'learning_rate': 0.0001}
+2025-03-18 03:49:32 - INFO - {'run_time(hours)': 3.5392527186870577, 'total_steps': 10000, 'steps': 9700.0, 'training_loss': {'ae_loss': 1.9922637939453125, 'lm_loss': 2.6789705753326416}, 'learning_rate': 0.0001}
+2025-03-18 03:55:16 - INFO - {'run_time(hours)': 3.634810407890214, 'total_steps': 10000, 'steps': 9800.0, 'training_loss': {'ae_loss': 1.4566431045532227, 'lm_loss': 1.5148577690124512}, 'learning_rate': 0.0001}
+2025-03-18 04:01:12 - INFO - {'run_time(hours)': 3.7337230539321897, 'total_steps': 10000, 'steps': 9900.0, 'training_loss': {'ae_loss': 1.431010127067566, 'lm_loss': 1.685228943824768}, 'learning_rate': 0.0001}
+2025-03-18 04:07:29 - INFO - {'run_time(hours)': 3.8382895749145085, 'total_steps': 10000, 'steps': 10000.0, 'training_loss': {'ae_loss': 1.8359160423278809, 'lm_loss': 2.17570424079895}, 'learning_rate': 0.0001}

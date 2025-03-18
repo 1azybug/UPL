@@ -60,6 +60,11 @@ def train(rank, args, world_size):
     training_config = config["pretrain_training_config"]
     task_config = config['pretrain_task_config']
 
+    assert world_size == training_config["device_count"], "device_count wrong"
+    assert training_config["total_batch_size"] == training_config['batch_size_per_device']*training_config["device_count"]*training_config["gradient_accumulation_steps"]
+    assert training_config["chunk_size"] == task_config["chunk_size"]
+    assert task_config["mem_size"]*task_config["compress_ratio"] == task_config["chunk_size"]
+
     config["data_config"]["model_id"] = training_config["model_id"]
     output_dir = "output"
     config["data_config"]["output_dir"] = output_dir
@@ -70,7 +75,7 @@ def train(rank, args, world_size):
     training_steps = len(train_examples)//training_config["total_batch_size"]
 
     # drop last examples
-    # train_examples = train_examples[24001:training_steps*training_config["total_batch_size"]]  # for checking pids of longer context 
+    # train_examples = train_examples[training_steps*training_config["total_batch_size"]-4800:training_steps*training_config["total_batch_size"]]  # for checking pids of longer context 
     train_examples = train_examples[:training_steps*training_config["total_batch_size"]]
     if rank==0:
         logging.info(f"[INFO] total_examples:{len(train_examples)} | training_steps:{training_steps}")
@@ -178,7 +183,7 @@ if __name__ == "__main__":
              join=True)
 
 """
-CUDA_VISIBLE_DEVICES=1,3 python ./pre_trainer.py --work_dir '../experiment/debug/quick' --port 14529
+CUDA_VISIBLE_DEVICES=0,1,2,3 python ./pre_trainer.py --work_dir '../experiment/debug/quick' --port 14529
 """
 
 

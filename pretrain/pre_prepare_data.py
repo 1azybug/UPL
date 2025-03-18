@@ -37,7 +37,7 @@ def get_long_text_list(dataset_repo, output_dir, min_len, max_len):
 
 def get_examples(model_id, dataset_repo, samples_num, min_len, max_len, instruction_dataset_repo, output_dir):
     model_name = model_id.split('/')[-1]
-    train_data_name = f"{output_dir}/train_"+model_name+"_"+str(samples_num)+f"samples_{min_len}-{max_len}len_sorted.pt"
+    train_data_name = f"{output_dir}/train_"+model_name+"_"+str(samples_num)+f"samples_{min_len}-{max_len}len.pt"
     eval_data_name = f"{output_dir}/eval_"+model_name+"_"+str(samples_num)+f"samples_{min_len}-{max_len}len.pt"
 
     if os.path.exists(train_data_name):
@@ -68,23 +68,14 @@ def get_examples(model_id, dataset_repo, samples_num, min_len, max_len, instruct
         if len(examples) == samples_num+1000:
             break
 
-    # 分割验证集和训练集，并对训练集排序
-    eval_examples = examples[:1000]
-    train_examples = examples[1000:]
+    # 1k for validation
+    torch.save(examples[1000:], train_data_name)
+    torch.save(examples[:1000], eval_data_name)
     
-    print(train_examples[0]["inputs"].shape)
-    # 按输入长度从短到长排序训练集
-    train_examples_sorted = sorted(train_examples, key=lambda x: x["inputs"].size(0))
-    print(train_examples_sorted[0]["inputs"].shape)
-    
-    # 保存处理后的数据
-    torch.save(train_examples_sorted, train_data_name)
-    torch.save(eval_examples, eval_data_name)
+    return examples[1000:], examples[:1000]
 
 
-    print(len(train_examples_sorted))
-    print(len(eval_examples))
-    return train_examples_sorted, eval_examples
+
 
     
 if __name__ == "__main__":
