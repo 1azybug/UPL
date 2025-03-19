@@ -61,9 +61,10 @@ def train(rank, args, world_size):
 
     train_examples, eval_examples = get_examples(**config["data_config"])
 
-    random.seed(rank)
-    random.shuffle(train_examples)
-
+    ###############################预先在准备数据时打乱了#########################################
+    # random.seed(rank)
+    # random.shuffle(train_examples)
+    ############################################################################################
     # cal the total step
     training_steps = len(train_examples)//training_config["total_batch_size"]
 

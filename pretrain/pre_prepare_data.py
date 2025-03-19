@@ -52,7 +52,7 @@ def get_examples(model_id, dataset_repo, samples_num, min_len, max_len, instruct
     examples = []
     for text in tqdm(long_text_list, desc="Processing examples"):
         
-        ids = tokenizer(text)["input_ids"]
+        ids = tokenizer(text, add_special_tokens=False)["input_ids"]
         
         if len(ids)<min_len:
             continue
@@ -60,10 +60,15 @@ def get_examples(model_id, dataset_repo, samples_num, min_len, max_len, instruct
             continue
         # half for prefix, half for LM
         last_start = len(ids) // 2
+
+        inputs = [tokenizer.bos_token_id] + ids[:last_start] 
+        ae_target = inputs + [tokenizer.eos_token_id]
+        lm_target = ids[last_start:] + [tokenizer.eos_token_id]
         
-        inputs = torch.LongTensor(ids[:last_start])
-        lm_target = torch.LongTensor(ids[last_start:])
-        examples.append({"inputs":inputs,"lm_target":lm_target})
+        inputs = torch.LongTensor(inputs)
+        ae_target = torch.LongTensor(ae_target)
+        lm_target = torch.LongTensor(lm_target)
+        examples.append({"inputs":inputs, "ae_target":ae_target, "lm_target":lm_target})
 
         if len(examples) == samples_num+1000:
             break

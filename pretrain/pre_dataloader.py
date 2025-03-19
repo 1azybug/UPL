@@ -13,7 +13,7 @@ class CompressDataset(IterableDataset):
         lm_targets = []
         for example in self.examples:
             input_ids.append(example["inputs"])
-            ae_targets.append(example["inputs"])
+            ae_targets.append(example["ae_target"])
             lm_targets.append(example["lm_target"])
                 
             if self.batch_size == len(input_ids):

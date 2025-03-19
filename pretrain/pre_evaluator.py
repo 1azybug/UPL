@@ -224,5 +224,5 @@ if __name__ == "__main__":
 """
 
 
-CUDA_VISIBLE_DEVICES=0,1,2,3 python ./pre_evaluator.py --work_dir '../experiment/debug/quick' --batch_size 1
+CUDA_VISIBLE_DEVICES=5,7 python ./pre_evaluator.py --work_dir '../experiment/debug/quick' --batch_size 1
 """

@@ -29,22 +29,20 @@ batch_size_per_device*device_count*gradient_accumulation_steps==total_batch_size
 "gradient_accumulation_steps": 2,
 ```
 
-## 从这里继续debug(疑问：怎么定位work dir的东西？)
 ## 继续预训练
 ```
 cd pretrain
 
 处理一次数据集即可：python pre_prepare_data.py --work_dir '../experiment/main/ICAE_1.1B_UPL'
+使用LLama3.1需要更新transformers版本: pip install --upgrade transformers
 训练模型：python ./pre_trainer.py --work_dir '../experiment/main/ICAE_1.1B_UPL' --port 14529
 测试模型：python ./pre_evaluator.py --work_dir '../experiment/main/ICAE_1.1B_UPL' --batch_size 1
 ```
 
 ## 微调
 ```
-注意事项：请修改config的learning_rate为0.00005
-记得在config去掉ae_loss
 cd sft
-处理一次数据集即可：python instruction_prepare_data.py --work_dir '../experiment/sy_1'
+处理一次数据集即可：python instruction_prepare_data.py --work_dir '../experiment/main/ICAE_1.1B_UPL'
 
 微调训练：python ./instruction_trainer.py --work_dir '../experiment/sy_1' --port 14525
 模型测试：python ./instruction_evaluator.py --work_dir '../experiment/sy_1' --batch_size 1

@@ -6,7 +6,7 @@ sys.path.append(BASE_PATH)
 import logging
 import pdb
 import queue
-from transformers import AutoModelForCausalLM, AutoTokenizer,BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss
@@ -22,6 +22,7 @@ class CompressLLM(torch.nn.Module):
     def __init__(self, model_id, mem_size, compress_ratio, device_rank, task_config):
         super().__init__()
         self.loss_fct = nn.CrossEntropyLoss(ignore_index=-100)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id,
             torch_dtype=torch.bfloat16,
@@ -56,15 +57,17 @@ class CompressLLM(torch.nn.Module):
         # context position ids:[1,......,end_idx]
         compress_token_ids, compress_token, end_idx = self.compress(inputs)
 
+##########################################################AE Task########################################################################
+
         if self.task_config["is_pretrain"] and self.task_config["use_ae_loss"]:
-            inputs_embeds = self.decoder.model.embed_tokens(inputs['input_ids'])  # inputs['input_ids']==inputs['ae_targets']
+            inputs_embeds = self.decoder.model.embed_tokens(inputs['ae_targets'])  
             bsz, seq_len, emb_size = inputs_embeds.size()
             # [1,E] -> [1,1,E] -> [B,1,E]
             expand_ae_token = self.special_tokens[0:1].unsqueeze(0).expand(bsz, 1, emb_size)
             # [B,mem_size,E];     [B,1,E];      [B,seq_len-1,E]
             ae_emb = torch.cat([compress_token, expand_ae_token, inputs_embeds[:, :-1, :]], dim=1)
 
-            # ae_pids:[0], ae_target pids:[1,......,end_idx-1] because drop the last token to predict [1,...,end_idx]
+            # ae_pids:[0], ae_target[:, :-1] pids:[1,......,end_idx] because drop the last token to predict [1,...,end_idx+1] the last one is <eos>.
             position_ids = torch.arange(0, inputs_embeds.size(1), device=inputs_embeds.device).unsqueeze(0)
             ae_position_ids = torch.cat([compress_token_ids, position_ids], dim=1)
             # print(f"ae_position_ids:{ae_position_ids}")
@@ -80,8 +83,7 @@ class CompressLLM(torch.nn.Module):
             tot_loss += ae_loss
             tot_task += 1
         
-        ##################################################检查到这里################################################################
-
+#######################################################LM Task################################################################################
 
         if self.task_config["is_pretrain"] and self.task_config["use_lm_loss"]:
             lm_target_emb = self.decoder.model.embed_tokens(inputs['lm_targets'][:, :-1])
@@ -242,7 +244,7 @@ class CompressLLM(torch.nn.Module):
             # [1, seq_len]/[1,1] -> [1,1]
             next_position_ids = next_position_ids[:,-1:]+1
             generate_text.append(next_token_id.item())
-            if next_token_id.item() == 2:
+            if next_token_id.item() == self.tokenizer.eos_token_id:
                 return generate_text
         return generate_text
 
@@ -265,7 +267,7 @@ class CompressLLM(torch.nn.Module):
         next_inputs_embeds = ae_emb.clone()
         next_position_ids = ae_position_ids.clone()
 
-        for i in range(inputs['input_ids'].size(-1)):
+        for i in range(inputs['input_ids'].size(-1)+20):
             # print(f"next_pids:{next_position_ids}")
             if self.task_config["use_pe"]:
                 out = self.decoder(position_ids=next_position_ids, inputs_embeds=next_inputs_embeds, past_key_values=past_key_values, use_cache=True)
@@ -281,7 +283,7 @@ class CompressLLM(torch.nn.Module):
             # next_position_ids:[B,S] -> [B,1]
             next_position_ids = next_position_ids[:,-1:]+1
             generate_text.append(next_token_id.item())
-            if next_token_id.item() == 2:
+            if next_token_id.item() == self.tokenizer.eos_token_id:
                 return generate_text
         return generate_text
 
@@ -326,7 +328,7 @@ class CompressLLM(torch.nn.Module):
             next_token_id = torch.argmax(logit, dim=-1)
             next_inputs_embeds = self.model.model.embed_tokens(next_token_id).unsqueeze(1).to(inputs_embeds.device)
             generate_text.append(next_token_id.item())
-            if next_token_id.item() == 2:
+            if next_token_id.item() == self.tokenizer.eos_token_id:
                 return generate_text
         return generate_text
 
