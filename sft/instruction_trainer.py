@@ -55,8 +55,8 @@ def train(rank, args, world_size):
 
     setup(rank, world_size, args.port)
     torch.cuda.set_device(rank)
-    training_config = config["training_config"]
-    task_config = config['task_config']
+    training_config = config["sft_training_config"]
+    task_config = config['sft_task_config']
     config["data_config"]["model_id"] = training_config["model_id"]
 
     train_examples, eval_examples = get_examples(**config["data_config"])
@@ -83,7 +83,11 @@ def train(rank, args, world_size):
 
     # Instantiate the model and move it to the corresponding GPU
     model = get_model(training_config["model_id"], task_config, rank)
-    model = load_adapter(model, save_path_and_name=args.work_dir+'/adapter.pt', log=False)
+    model = load_adapter(model, save_path_and_name=args.work_dir+'/output/adapter.pt', log=False)
+
+    # check non-frozen parameters
+    if rank == 0:
+        count_parameters(model, config)
 
     ddp_model = DDP(model, device_ids=[rank] ,find_unused_parameters=True)
 
@@ -110,13 +114,13 @@ def train(rank, args, world_size):
         def save():
             if rank!=0:
                 return
-            with open(os.path.join(args.work_dir,"instruction_info.json"),'w') as f:
+            with open(os.path.join(args.work_dir,"output/instruction_info.json"),'w') as f:
                 json.dump(info_list,f,indent=4)
 
-            with open(os.path.join(args.work_dir,"config.json"),'w') as f:
+            with open(os.path.join(args.work_dir,"output/config.json"),'w') as f:
                 json.dump(config,f,indent=4)
                 
-            save_adapter(ddp_model.module,save_path_and_name=os.path.join(args.work_dir,"instruction_adapter.pt"))
+            save_adapter(ddp_model.module,save_path_and_name=os.path.join(args.work_dir,"output/instruction_adapter.pt"))
 
         if rank == 0:
             progress_bar = tqdm(total=training_steps*accumulation_steps)

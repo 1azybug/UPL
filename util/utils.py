@@ -59,8 +59,8 @@ def count_parameters(model, config):
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     embedding_params = sum(
-        p.numel() for name, p in model.named_parameters() if p.requires_grad and ('lm_head' in name or 'emb' in name))
-    non_embedding_params = trainable_params - embedding_params
+        p.numel() for name, p in model.named_parameters() if ('lm_head' in name or 'emb' in name))
+    non_embedding_params = total_params - embedding_params
 
     config["Total_parameters"] = total_params
     config["Trainable_parameters"] = trainable_params
