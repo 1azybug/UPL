@@ -4,7 +4,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from path_config import BASE_PATH
 sys.path.append(BASE_PATH)
 import json
-import os
 import matplotlib.pyplot as plt
 import torch
 from tqdm import tqdm
