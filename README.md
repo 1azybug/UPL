@@ -44,9 +44,9 @@ cd pretrain
 cd sft
 处理一次数据集即可：python instruction_prepare_data.py --work_dir '../experiment/main/ICAE_1.1B_UPL'
 
-微调训练：python ./instruction_trainer.py --work_dir '../experiment/sy_1' --port 14525
-模型测试：python ./instruction_evaluator.py --work_dir '../experiment/sy_1' --batch_size 1
-训练模型和测试结果均保存在sy_1文件夹里
+微调训练：python ./instruction_trainer.py --work_dir '../experiment/main/ICAE_1.1B_UPL' --port 14525
+模型测试：python ./instruction_evaluator.py --work_dir '../experiment/main/ICAE_1.1B_UPL' --batch_size 1
+训练模型和测试结果均保存在'../experiment/main/ICAE_1.1B_UPL/output'文件夹里
 
 
 获取6个数据集的分别指标：
