@@ -21,12 +21,20 @@ def get_examples_list(instruction_dataset_repo, split):
         with open(f'output/{instruction_dataset_repo_name}_{split}_instruction_dataset.json', 'r', encoding='utf-8') as f:
             examples_list =  json.load(f)
         return examples_list
-
-    dataset = load_dataset(instruction_dataset_repo, split=split, streaming=True)
-
+#############################gather all in-domain and out-of-domain dataset for testing##############################################
     examples_list = []
-    for example in tqdm(dataset, desc="Processing examples"):
-        examples_list.append(example)
+    if split == "train":
+        dataset = load_dataset(instruction_dataset_repo, split=split, streaming=True)
+        for example in tqdm(dataset, desc="Processing examples"):
+            examples_list.append(example)
+    else:
+        dataset = load_dataset(instruction_dataset_repo, split="test", streaming=True)
+        for example in tqdm(dataset, desc="Processing examples"):
+            examples_list.append(example)
+        dataset = load_dataset(instruction_dataset_repo, split="validation", streaming=True)
+        for example in tqdm(dataset, desc="Processing examples"):
+            examples_list.append(example)    
+
         
     with open(f'output/{instruction_dataset_repo_name}_{split}_instruction_dataset.json', 'w', encoding='utf-8') as f:
         json.dump(examples_list, f, ensure_ascii=False)
@@ -112,7 +120,7 @@ def get_examples(model_id, instruction_dataset_repo, samples_num, min_len, max_l
 
     random.seed(0)
     random.shuffle(train_examples_list)
-    train_examples_list[:samples_num]
+    train_examples_list = train_examples_list[:samples_num]
 
     train_data = get_ids(instruction_dataset_repo_name, train_examples_list, tokenizer, split="train")
     test_data = get_ids(instruction_dataset_repo_name, test_examples_list, tokenizer, split="test")
@@ -143,5 +151,5 @@ if __name__ == "__main__":
     print(eval_examples[50])
 
 """
-python instruction_prepare_data.py --work_dir '../experiment/debug/quick/'
+python instruction_prepare_data.py --work_dir '../experiment/debug/quick'
 """

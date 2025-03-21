@@ -288,9 +288,5 @@ if __name__ == "__main__":
 
 
 """
-python ./pre_evaluator.py --work_dir CompressLLM --batch_size 1
-
-CUDA_VISIBLE_DEVICES=0,1 HF_ENDPOINT=https://hf-mirror.com HF_DATASETS_OFFLINE=0 python ./pre_evaluator.py --work_dir CompressLLM --batch_size 1
-
-Todo: multi gpu parallel inference
+CUDA_VISIBLE_DEVICES=0,1,2,3 python ./instruction_evaluator.py --work_dir '../experiment/debug/quick' --batch_size 1
 """

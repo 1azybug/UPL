@@ -46,13 +46,14 @@ cd sft
 
 微调训练：python ./instruction_trainer.py --work_dir '../experiment/main/ICAE_1.1B_UPL' --port 14525
 模型测试：python ./instruction_evaluator.py --work_dir '../experiment/main/ICAE_1.1B_UPL' --batch_size 1
+         python ../util/evaluate_ood.py --work_dir '../experiment/main/ICAE_1.1B_UPL'
+         python ../util/evaluate_iid.py --work_dir '../experiment/main/ICAE_1.1B_UPL'
+
 训练模型和测试结果均保存在'../experiment/main/ICAE_1.1B_UPL/output'文件夹里
 
-
-获取6个数据集的分别指标：
-cd util
-更改目录为当前结果 sy_1 运行evaluate_ood.py
 ```
+---------------------
+# 检查完一大半了
 
 ## 500xCompress复现
 ```

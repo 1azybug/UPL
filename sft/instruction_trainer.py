@@ -180,8 +180,7 @@ if __name__ == "__main__":
              join=True)
 
 """
-# 用 > train.log 无法实时查看输出
-CUDA_VISIBLE_DEVICES=0,1 python ./instruction_trainer.py --work_dir debug_CompressLLM_wo-cmp --port 12314
+CUDA_VISIBLE_DEVICES=0,1,2,3 python ./instruction_trainer.py --work_dir '../experiment/debug/quick' --port 12314
 """
 
 
