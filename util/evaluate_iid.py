@@ -2,6 +2,7 @@ import json
 import sys
 import numpy as np
 import argparse
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--work_dir", type=str, required=True, help="Directory containing the data files")

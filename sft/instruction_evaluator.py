@@ -211,7 +211,7 @@ if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained(config["data_config"]["model_id"])
 
     sys.setrecursionlimit(10000)
-    if not os.path.exists(args.work_dir+f'output/instruction_eval_info_list_0.json'):
+    if not os.path.exists(args.work_dir+f'/output/instruction_eval_info_list_0.json'):
         mp.spawn(evaluate,
                 args=(args, world_size, tokenizer),
                 nprocs=world_size,
@@ -228,8 +228,8 @@ if __name__ == "__main__":
 
     print("calculate BLEU4...")
     instruction_dataset_name = config["data_config"]["instruction_dataset_repo"].split('/')[-1]
-    if os.path.exists(f'{instruction_dataset_name}_test_instruction_dataset.json'):
-        with open(f'{instruction_dataset_name}_test_instruction_dataset.json', 'r', encoding='utf-8') as f:
+    if os.path.exists(f'output/{instruction_dataset_name}_test_instruction_dataset.json'):
+        with open(f'output/{instruction_dataset_name}_test_instruction_dataset.json', 'r', encoding='utf-8') as f:
             examples_list =  json.load(f)
 
     instruction_inference_results = []
