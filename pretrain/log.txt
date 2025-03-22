@@ -1,62 +1,10 @@
-2025-03-22 22:32:26 - INFO - [INFO] rank2 training examples: [2, 6, 10, 14] ... [319986, 319990, 319994, 319998]| example_nums:80000 | training_steps:20000
-... [319984, 319988, 319992, 319996]| example_nums:80000 | training_steps:20000
-2025-03-22 22:32:27 - INFO - Total parameters: 2485473280
-2025-03-22 22:32:27 - INFO - Trainable parameters: 13844480
-2025-03-22 22:32:27 - INFO - Embedding parameters: 525336576
-2025-03-22 22:32:27 - INFO - non-Embedding parameters: 1960136704
-2025-03-22 22:32:27 - INFO - Embedding parameters percentage: 21.14%
-2025-03-22 22:32:27 - INFO - Trainable parameters percentage: 0.56%
-2025-03-22 22:33:50 - INFO - {'run_time(hours)': 0.022261414660347832, 'total_steps': 20000, 'steps': 100.0, 'training_loss': {'ae_loss': 2.53125, 'lm_loss': 2.1875}, 'learning_rate': 3.322333333333335e-05}
-2025-03-22 22:35:14 - INFO - {'run_time(hours)': 0.04558727641900381, 'total_steps': 20000, 'steps': 200.0, 'training_loss': {'ae_loss': 3.859375, 'lm_loss': 3.375}, 'learning_rate': 6.644555555555568e-05}
-2025-03-22 22:36:39 - INFO - {'run_time(hours)': 0.06913350449668036, 'total_steps': 20000, 'steps': 300.0, 'training_loss': {'ae_loss': 2.28125, 'lm_loss': 2.15625}, 'learning_rate': 9.966777777777791e-05}
-2025-03-22 22:38:05 - INFO - {'run_time(hours)': 0.0928796496656206, 'total_steps': 20000, 'steps': 400.0, 'training_loss': {'ae_loss': 1.4453125, 'lm_loss': 1.5546875}, 'learning_rate': 0.0001}
-2025-03-22 22:39:29 - INFO - {'run_time(hours)': 0.11640113982889387, 'total_steps': 20000, 'steps': 500.0, 'training_loss': {'ae_loss': 2.296875, 'lm_loss': 3.0625}, 'learning_rate': 0.0001}
-2025-03-22 22:40:54 - INFO - {'run_time(hours)': 0.13989896648459965, 'total_steps': 20000, 'steps': 600.0, 'training_loss': {'ae_loss': 0.5234375, 'lm_loss': 0.63671875}, 'learning_rate': 0.0001}
-2025-03-22 22:42:19 - INFO - {'run_time(hours)': 0.16345599942737155, 'total_steps': 20000, 'steps': 700.0, 'training_loss': {'ae_loss': 2.359375, 'lm_loss': 2.625}, 'learning_rate': 0.0001}
-2025-03-22 22:43:44 - INFO - {'run_time(hours)': 0.18714208715491826, 'total_steps': 20000, 'steps': 800.0, 'training_loss': {'ae_loss': 1.703125, 'lm_loss': 2.109375}, 'learning_rate': 0.0001}
-2025-03-22 22:45:10 - INFO - {'run_time(hours)': 0.21095530894067552, 'total_steps': 20000, 'steps': 900.0, 'training_loss': {'ae_loss': 1.9765625, 'lm_loss': 2.453125}, 'learning_rate': 0.0001}
-2025-03-22 22:46:35 - INFO - {'run_time(hours)': 0.2346346371041404, 'total_steps': 20000, 'steps': 1000.0, 'training_loss': {'ae_loss': 1.2421875, 'lm_loss': 1.9453125}, 'learning_rate': 0.0001}
-2025-03-22 22:48:00 - INFO - {'run_time(hours)': 0.2583316994375653, 'total_steps': 20000, 'steps': 1100.0, 'training_loss': {'ae_loss': 2.046875, 'lm_loss': 2.3125}, 'learning_rate': 0.0001}
-2025-03-22 22:49:25 - INFO - {'run_time(hours)': 0.28174596740139857, 'total_steps': 20000, 'steps': 1200.0, 'training_loss': {'ae_loss': 1.46875, 'lm_loss': 2.34375}, 'learning_rate': 0.0001}
-2025-03-22 22:50:50 - INFO - {'run_time(hours)': 0.30540441109074484, 'total_steps': 20000, 'steps': 1300.0, 'training_loss': {'ae_loss': 1.9765625, 'lm_loss': 2.890625}, 'learning_rate': 0.0001}
-2025-03-22 22:52:15 - INFO - {'run_time(hours)': 0.3290992279185189, 'total_steps': 20000, 'steps': 1400.0, 'training_loss': {'ae_loss': 1.3359375, 'lm_loss': 1.7265625}, 'learning_rate': 0.0001}
-2025-03-22 22:53:40 - INFO - {'run_time(hours)': 0.3527835386991501, 'total_steps': 20000, 'steps': 1500.0, 'training_loss': {'ae_loss': 1.453125, 'lm_loss': 1.984375}, 'learning_rate': 0.0001}
-2025-03-22 22:55:04 - INFO - {'run_time(hours)': 0.376129359404246, 'total_steps': 20000, 'steps': 1600.0, 'training_loss': {'ae_loss': 2.03125, 'lm_loss': 2.46875}, 'learning_rate': 0.0001}
-2025-03-22 22:56:29 - INFO - {'run_time(hours)': 0.3995857447385788, 'total_steps': 20000, 'steps': 1700.0, 'training_loss': {'ae_loss': 1.359375, 'lm_loss': 2.6875}, 'learning_rate': 0.0001}
-2025-03-22 22:57:54 - INFO - {'run_time(hours)': 0.4231581696536806, 'total_steps': 20000, 'steps': 1800.0, 'training_loss': {'ae_loss': 1.7109375, 'lm_loss': 2.71875}, 'learning_rate': 0.0001}
-2025-03-22 22:59:18 - INFO - {'run_time(hours)': 0.4466728241576089, 'total_steps': 20000, 'steps': 1900.0, 'training_loss': {'ae_loss': 2.53125, 'lm_loss': 3.609375}, 'learning_rate': 0.0001}
-2025-03-22 23:00:43 - INFO - {'run_time(hours)': 0.47018869916598, 'total_steps': 20000, 'steps': 2000.0, 'training_loss': {'ae_loss': 1.5703125, 'lm_loss': 2.84375}, 'learning_rate': 0.0001}
-2025-03-22 23:02:07 - INFO - {'run_time(hours)': 0.49345969710085125, 'total_steps': 20000, 'steps': 2100.0, 'training_loss': {'ae_loss': 2.0625, 'lm_loss': 3.203125}, 'learning_rate': 0.0001}
-2025-03-22 23:03:31 - INFO - {'run_time(hours)': 0.5168559955226051, 'total_steps': 20000, 'steps': 2200.0, 'training_loss': {'ae_loss': 2.078125, 'lm_loss': 3.109375}, 'learning_rate': 0.0001}
-2025-03-22 23:04:55 - INFO - {'run_time(hours)': 0.540228711300426, 'total_steps': 20000, 'steps': 2300.0, 'training_loss': {'ae_loss': 2.0625, 'lm_loss': 3.359375}, 'learning_rate': 0.0001}
-2025-03-22 23:06:19 - INFO - {'run_time(hours)': 0.5636442747380999, 'total_steps': 20000, 'steps': 2400.0, 'training_loss': {'ae_loss': 1.390625, 'lm_loss': 3.21875}, 'learning_rate': 0.0001}
-2025-03-22 23:07:44 - INFO - {'run_time(hours)': 0.5872453857792749, 'total_steps': 20000, 'steps': 2500.0, 'training_loss': {'ae_loss': 1.796875, 'lm_loss': 2.6875}, 'learning_rate': 0.0001}
-2025-03-22 23:09:09 - INFO - {'run_time(hours)': 0.6107545157935884, 'total_steps': 20000, 'steps': 2600.0, 'training_loss': {'ae_loss': 1.8203125, 'lm_loss': 2.71875}, 'learning_rate': 0.0001}
-2025-03-22 23:10:33 - INFO - {'run_time(hours)': 0.6341630207167731, 'total_steps': 20000, 'steps': 2700.0, 'training_loss': {'ae_loss': 1.265625, 'lm_loss': 1.6953125}, 'learning_rate': 0.0001}
-2025-03-22 23:11:58 - INFO - {'run_time(hours)': 0.6576040497091081, 'total_steps': 20000, 'steps': 2800.0, 'training_loss': {'ae_loss': 1.8828125, 'lm_loss': 3.234375}, 'learning_rate': 0.0001}
-2025-03-22 23:13:22 - INFO - {'run_time(hours)': 0.6810357226265802, 'total_steps': 20000, 'steps': 2900.0, 'training_loss': {'ae_loss': 1.7109375, 'lm_loss': 2.8125}, 'learning_rate': 0.0001}
-2025-03-22 23:14:46 - INFO - {'run_time(hours)': 0.7044965161217583, 'total_steps': 20000, 'steps': 3000.0, 'training_loss': {'ae_loss': 1.625, 'lm_loss': 1.5703125}, 'learning_rate': 0.0001}
-2025-03-22 23:16:12 - INFO - {'run_time(hours)': 0.7283030783467822, 'total_steps': 20000, 'steps': 3100.0, 'training_loss': {'ae_loss': 1.4609375, 'lm_loss': 2.59375}, 'learning_rate': 0.0001}
-2025-03-22 23:17:36 - INFO - {'run_time(hours)': 0.7514900541305543, 'total_steps': 20000, 'steps': 3200.0, 'training_loss': {'ae_loss': 1.9921875, 'lm_loss': 2.890625}, 'learning_rate': 0.0001}
-2025-03-22 23:19:00 - INFO - {'run_time(hours)': 0.7749121602376302, 'total_steps': 20000, 'steps': 3300.0, 'training_loss': {'ae_loss': 2.140625, 'lm_loss': 2.953125}, 'learning_rate': 0.0001}
-2025-03-22 23:20:24 - INFO - {'run_time(hours)': 0.7982454389333725, 'total_steps': 20000, 'steps': 3400.0, 'training_loss': {'ae_loss': 1.0625, 'lm_loss': 1.25}, 'learning_rate': 0.0001}
-2025-03-22 23:21:48 - INFO - {'run_time(hours)': 0.8216736225287119, 'total_steps': 20000, 'steps': 3500.0, 'training_loss': {'ae_loss': 2.03125, 'lm_loss': 2.875}, 'learning_rate': 0.0001}
-2025-03-22 23:23:13 - INFO - {'run_time(hours)': 0.8450925175348918, 'total_steps': 20000, 'steps': 3600.0, 'training_loss': {'ae_loss': 1.546875, 'lm_loss': 2.734375}, 'learning_rate': 0.0001}
-2025-03-22 23:24:36 - INFO - {'run_time(hours)': 0.8683529422680537, 'total_steps': 20000, 'steps': 3700.0, 'training_loss': {'ae_loss': 1.609375, 'lm_loss': 2.421875}, 'learning_rate': 0.0001}
-2025-03-22 23:26:01 - INFO - {'run_time(hours)': 0.891786421140035, 'total_steps': 20000, 'steps': 3800.0, 'training_loss': {'ae_loss': 1.9765625, 'lm_loss': 2.96875}, 'learning_rate': 0.0001}
-2025-03-22 23:27:25 - INFO - {'run_time(hours)': 0.9152842150794135, 'total_steps': 20000, 'steps': 3900.0, 'training_loss': {'ae_loss': 2.265625, 'lm_loss': 2.3125}, 'learning_rate': 0.0001}
-2025-03-22 23:28:49 - INFO - {'run_time(hours)': 0.9385909148719576, 'total_steps': 20000, 'steps': 4000.0, 'training_loss': {'ae_loss': 1.2109375, 'lm_loss': 2.609375}, 'learning_rate': 0.0001}
-2025-03-22 23:30:13 - INFO - {'run_time(hours)': 0.9619509710205926, 'total_steps': 20000, 'steps': 4100.0, 'training_loss': {'ae_loss': 1.203125, 'lm_loss': 2.109375}, 'learning_rate': 0.0001}
-2025-03-22 23:31:37 - INFO - {'run_time(hours)': 0.9852815788984298, 'total_steps': 20000, 'steps': 4200.0, 'training_loss': {'ae_loss': 1.7578125, 'lm_loss': 2.765625}, 'learning_rate': 0.0001}
-2025-03-22 23:33:03 - INFO - {'run_time(hours)': 1.0092006617122227, 'total_steps': 20000, 'steps': 4300.0, 'training_loss': {'ae_loss': 1.40625, 'lm_loss': 2.828125}, 'learning_rate': 0.0001}
-2025-03-22 23:34:28 - INFO - {'run_time(hours)': 1.032646556629075, 'total_steps': 20000, 'steps': 4400.0, 'training_loss': {'ae_loss': 0.6875, 'lm_loss': 1.8515625}, 'learning_rate': 0.0001}
-2025-03-22 23:35:52 - INFO - {'run_time(hours)': 1.0561014962196351, 'total_steps': 20000, 'steps': 4500.0, 'training_loss': {'ae_loss': 1.359375, 'lm_loss': 2.234375}, 'learning_rate': 0.0001}
-2025-03-22 23:37:16 - INFO - {'run_time(hours)': 1.0794997529851065, 'total_steps': 20000, 'steps': 4600.0, 'training_loss': {'ae_loss': 1.671875, 'lm_loss': 2.90625}, 'learning_rate': 0.0001}
-2025-03-22 23:38:40 - INFO - {'run_time(hours)': 1.1026986460553274, 'total_steps': 20000, 'steps': 4700.0, 'training_loss': {'ae_loss': 1.8828125, 'lm_loss': 2.40625}, 'learning_rate': 0.0001}
-2025-03-22 23:40:04 - INFO - {'run_time(hours)': 1.1259322202867932, 'total_steps': 20000, 'steps': 4800.0, 'training_loss': {'ae_loss': 1.2109375, 'lm_loss': 2.640625}, 'learning_rate': 0.0001}
-2025-03-22 23:41:28 - INFO - {'run_time(hours)': 1.149291789200571, 'total_steps': 20000, 'steps': 4900.0, 'training_loss': {'ae_loss': 1.5625, 'lm_loss': 2.40625}, 'learning_rate': 0.0001}
-2025-03-22 23:42:51 - INFO - {'run_time(hours)': 1.172488687965605, 'total_steps': 20000, 'steps': 5000.0, 'training_loss': {'ae_loss': 1.9453125, 'lm_loss': 3.015625}, 'learning_rate': 0.0001}
-2025-03-22 23:44:15 - INFO - {'run_time(hours)': 1.195779020720058, 'total_steps': 20000, 'steps': 5100.0, 'training_loss': {'ae_loss': 1.1015625, 'lm_loss': 1.6171875}, 'learning_rate': 0.0001}
-2025-03-22 23:45:39 - INFO - {'run_time(hours)': 1.2190695801046159, 'total_steps': 20000, 'steps': 5200.0, 'training_loss': {'ae_loss': 0.78515625, 'lm_loss': 1.15625}, 'learning_rate': 0.0001}
-2025-03-22 23:47:02 - INFO - {'run_time(hours)': 1.2422879857487148, 'total_steps': 20000, 'steps': 5300.0, 'training_loss': {'ae_loss': 1.328125, 'lm_loss': 2.6875}, 'learning_rate': 0.0001}
-2025-03-22 23:48:27 - INFO - {'run_time(hours)': 1.2658779078722, 'total_steps': 20000, 'steps': 5400.0, 'training_loss': {'ae_loss': 1.4453125, 'lm_loss': 3.40625}, 'learning_rate': 0.0001}
+2025-03-23 00:23:43 - INFO - [INFO] rank2 training examples: [2, 6, 10, 14] ... [3186, 3190, 3194, 3198]| example_nums:800 | training_steps:200
+ 8, 12] ... [3184, 3188, 3192, 3196]| example_nums:800 | training_steps:200
+2025-03-23 00:23:45 - INFO - Total parameters: 2485473280
+2025-03-23 00:23:45 - INFO - Trainable parameters: 13844480
+2025-03-23 00:23:45 - INFO - Embedding parameters: 525336576
+2025-03-23 00:23:45 - INFO - non-Embedding parameters: 1960136704
+2025-03-23 00:23:45 - INFO - Embedding parameters percentage: 21.14%
+2025-03-23 00:23:45 - INFO - Trainable parameters percentage: 0.56%
+2025-03-23 00:25:28 - INFO - {'run_time(hours)': 0.028354535632663304, 'total_steps': 200, 'steps': 100.0, 'training_loss': {'ae_loss': 1.0390625, 'lm_loss': 2.34375}, 'learning_rate': 3.322333333333335e-05}
+2025-03-23 00:27:15 - INFO - {'run_time(hours)': 0.05813103324837155, 'total_steps': 200, 'steps': 200.0, 'training_loss': {'ae_loss': 0.2138671875, 'lm_loss': 3.046875}, 'learning_rate': 6.644555555555568e-05}

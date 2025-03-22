@@ -1,12 +1,17 @@
 # 500xCompressor
 
 **在这个分支里可以复现500xCompressor的实验**
-操作与主分支一致
+
+操作与主分支一致，但**需要回退transformers版本来使用旧版的KVcache.**
+`
+pip install transformers==4.46.3 --force-reinstall
+`
+
 
 1. 项目文件夹简称UPL，首先安装python及其需要的包运行以下命令
 ```
-git clone https://github.com/lx-Meteors/More-effective-context-compression-using-compressed-tokens.git
-cd More-effective-context-compression-using-compressed-tokens
+git clone 仓库名
+cd 仓库名
 conda create -n UPL python==3.10.4
 conda activate UPL
 pip install -r requirements.txt
