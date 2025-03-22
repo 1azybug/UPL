@@ -1,4 +1,8 @@
-# 项目上传github
+# 500xCompressor
+
+**在这个分支里可以复现500xCompressor的实验**
+操作与主分支一致
+
 1. 项目文件夹简称UPL，首先安装python及其需要的包运行以下命令
 ```
 git clone https://github.com/lx-Meteors/More-effective-context-compression-using-compressed-tokens.git

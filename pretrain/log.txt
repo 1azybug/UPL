@@ -58,3 +58,5 @@
 2025-03-22 23:42:51 - INFO - {'run_time(hours)': 1.172488687965605, 'total_steps': 20000, 'steps': 5000.0, 'training_loss': {'ae_loss': 1.9453125, 'lm_loss': 3.015625}, 'learning_rate': 0.0001}
 2025-03-22 23:44:15 - INFO - {'run_time(hours)': 1.195779020720058, 'total_steps': 20000, 'steps': 5100.0, 'training_loss': {'ae_loss': 1.1015625, 'lm_loss': 1.6171875}, 'learning_rate': 0.0001}
 2025-03-22 23:45:39 - INFO - {'run_time(hours)': 1.2190695801046159, 'total_steps': 20000, 'steps': 5200.0, 'training_loss': {'ae_loss': 0.78515625, 'lm_loss': 1.15625}, 'learning_rate': 0.0001}
+2025-03-22 23:47:02 - INFO - {'run_time(hours)': 1.2422879857487148, 'total_steps': 20000, 'steps': 5300.0, 'training_loss': {'ae_loss': 1.328125, 'lm_loss': 2.6875}, 'learning_rate': 0.0001}
+2025-03-22 23:48:27 - INFO - {'run_time(hours)': 1.2658779078722, 'total_steps': 20000, 'steps': 5400.0, 'training_loss': {'ae_loss': 1.4453125, 'lm_loss': 3.40625}, 'learning_rate': 0.0001}
