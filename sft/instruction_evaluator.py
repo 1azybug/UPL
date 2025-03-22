@@ -263,14 +263,23 @@ if __name__ == "__main__":
         example["bleu4"] = bleu4
         example["exact_match"] = 1.0 if gen_text==ans_text else 0.0
 
-        if gen_text == "." or gen_text == "":
-            example["rouge-f1"] = 0.0
-            rouge1_scores.append(0.0)
-        else:
+        # if gen_text == "." or gen_text == "":
+        #     example["rouge-f1"] = 0.0
+        #     rouge1_scores.append(0.0)
+        # else:
 
+        #     scores = rouge.get_scores(gen_text, ans_text)
+        #     example["rouge-f1"] = scores[0]["rouge-1"]["f"]
+        #     rouge1_scores.append(scores[0]["rouge-1"]["f"])
+
+        try:
             scores = rouge.get_scores(gen_text, ans_text)
             example["rouge-f1"] = scores[0]["rouge-1"]["f"]
             rouge1_scores.append(scores[0]["rouge-1"]["f"])
+        except Exception as e:  # 捕获所有非系统退出异常
+            print(f"[Error] Rouge计算失败: {str(e)} | 生成文本: '{gen_text}'")  # 输出错误信息
+            example["rouge-f1"] = 0.0
+            rouge1_scores.append(0.0)
 
         instruction_inference_results.append(example)
         bleu4_list.append(bleu4)
