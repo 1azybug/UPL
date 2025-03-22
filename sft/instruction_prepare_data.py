@@ -45,7 +45,7 @@ def get_examples_list(instruction_dataset_repo, split):
 def get_ids(instruction_dataset_repo_name, examples_list, tokenizer, split):
 
     examples = []
-    info_list = []
+    # info_list = []
     minn = 999999
     maxn = 0
     for example in tqdm(examples_list, desc="Processing examples"):
@@ -94,10 +94,10 @@ def get_ids(instruction_dataset_repo_name, examples_list, tokenizer, split):
         else:
             examples.append({"input_ids":inputs,"lm_targets":lm_target,
                             "instruction_target":instruction_target})
-        info_list.append(example)
+        # info_list.append(example)
     print(f"len range: [{minn}:{maxn}]")
-    with open(f'output/{instruction_dataset_repo_name}_{split}_instruction_dataset.json', 'w', encoding='utf-8') as f:
-        json.dump(info_list, f, ensure_ascii=False)
+    # with open(f'output/{instruction_dataset_repo_name}_{split}_instruction_dataset.json', 'w', encoding='utf-8') as f:
+    #     json.dump(info_list, f, ensure_ascii=False)
     return examples
 
 def get_examples(model_id, instruction_dataset_repo, samples_num, min_len, max_len, dataset_repo):
