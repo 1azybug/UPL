@@ -261,6 +261,7 @@ if __name__ == "__main__":
         bleu4 = sentence_bleu([answer_ids], gen_ids, weights=(0.25, 0.25, 0.25, 0.25))
         example["generate"] = gen_text
         example["bleu4"] = bleu4
+        example["exact_match"] = 1.0 if gen_text==ans_text else 0.0
 
         if gen_text == "." or gen_text == "":
             example["rouge-f1"] = 0.0
