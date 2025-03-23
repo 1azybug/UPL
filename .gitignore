@@ -3,3 +3,6 @@
 **log.txt
 **/local_experiment/
 ./pretrain/log.txt
+*__pycache__/
+*.log
+*.pyc
