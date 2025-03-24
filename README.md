@@ -2,6 +2,12 @@
 
 **在这个分支里可以复现500xCompressor的实验**
 
+其他实验在其他分支里面，你可以用下面命令查看并切换到其他分支
+```
+git branch
+git checkout <分支名>
+```
+
 操作与主分支一致，但**需要回退transformers版本来使用旧版的KVcache.**
 `
 pip install transformers==4.46.3 --force-reinstall
@@ -21,14 +27,14 @@ pip install -r requirements.txt
 -  预训练数据集：https://huggingface.co/datasets/DKYoon/SlimPajama-6B
 -  微调数据集：https://huggingface.co/datasets/mrqa-workshop/mrqa
 
-3. 修改experiment文件夹下的[config.json](./experiment/main/ICAE_1.1B_UPL/config.json)文件，填写模型和数据集的本地路径
+3. 修改experiment文件夹下的[config.json](./experiment/main/500x_Llama-3.2-1B_DPL/config.json)文件，填写模型和数据集的本地路径
 ```
 "model_id": "your_model_path",
 "dataset_repo": "your_data_path/DKYoon/SlimPajama-6B",
 "instruction_dataset_repo": "your_data_path/mrqa-workshop_mrqa"
 ```
 
-4. 修改experiment文件夹下的[config.json](./experiment/main/ICAE_1.1B_UPL/config.json)文件，**根据您的GPU数量修改梯度累积的步数**，确保 
+4. 修改experiment文件夹下的[config.json](./experiment/main/500x_Llama-3.2-1B_DPL/config.json)文件，**根据您的GPU数量修改梯度累积的步数**，确保 
 ```
 batch_size_per_device*device_count*gradient_accumulation_steps==total_batch_size
 ```
