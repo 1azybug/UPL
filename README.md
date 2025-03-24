@@ -88,5 +88,5 @@ cd pretrain
 bash pretrain_script.sh 等待完事即可
 bash sft_script.sh 等待完事即可
 
-最后进入util的evaluate_ood，配一下每个config的路径，测sft结果
+最后进入util的evaluate_ood，配一下每个config的路径，测sft结果 
 ```
