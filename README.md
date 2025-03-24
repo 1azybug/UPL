@@ -1,4 +1,17 @@
 # 项目上传github
+
+**这里是ICAE 第一次前向不使用UPL的消融实验**
+
+即,第一次前向不传入`position_id`，第二次前向传入`position_id`
+
+注意:**所有操作和主分支是一样的**。
+
+与主分支的区别是我们修改了代码：请看commit：`when use_pe is true, don't pass position_id in 1st forward pass `
+
+运行UPL的实验即可。
+
+配置文件在`./experiment/ICAE_1B_UPL`
+
 1. 项目文件夹简称UPL，首先安装python及其需要的包运行以下命令
 ```
 git clone https://github.com/1azybug/UPL.git
@@ -13,25 +26,24 @@ pip install -r requirements.txt
 -  微调数据集：https://huggingface.co/datasets/mrqa-workshop/mrqa
 
 3. 切换到正确的分支
-如果你想做ICAE的实验，忽略该步骤。
+如果你想做ICAE的第一次前向的消融实验，忽略该步骤。
 
-* 如果你想做500xCompressor的实验，则切换分支后，再看Readme.md：
+* 如果你想做其他的实验，可以用以下命令切换分支：
 ```
-git branch
-git checkout 500xCompressor
+git branch -a
+git checkout <分支名>
 ```
 
 
 
-
-4. 修改experiment文件夹下的[config.json](./experiment/main/ICAE_1.1B_UPL/config.json)文件，填写模型和数据集的本地路径
+4. 修改experiment文件夹下的[config.json](./experiment/ICAE_1B_UPL/config.json)文件，填写模型和数据集的本地路径
 ```
 "model_id": "your_model_path",
 "dataset_repo": "your_data_path/DKYoon/SlimPajama-6B",
 "instruction_dataset_repo": "your_data_path/mrqa-workshop_mrqa"
 ```
 
-5. 修改experiment文件夹下的[config.json](./experiment/main/ICAE_1.1B_UPL/config.json)文件，**根据您的GPU数量修改梯度累积的步数**，确保 
+5. 修改experiment文件夹下的[config.json](./experiment/ICAE_1B_UPL/config.json)文件，**根据您的GPU数量修改梯度累积的步数**，确保 
 ```
 batch_size_per_device*device_count*gradient_accumulation_steps==total_batch_size
 ```

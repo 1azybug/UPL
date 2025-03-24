@@ -202,8 +202,9 @@ class CompressLLM(torch.nn.Module):
                 compress_token_ids = torch.cat((compress_token_ids, mem_position_ids), dim=1)
 
             if self.task_config["use_pe"]:
-                outputs = self.model(position_ids=encode_position_ids, inputs_embeds=encode_inputs_embeds,
-                                     output_hidden_states=True)
+                # outputs = self.model(position_ids=encode_position_ids, inputs_embeds=encode_inputs_embeds,
+                #                      output_hidden_states=True)
+                outputs = self.model(inputs_embeds=encode_inputs_embeds, output_hidden_states=True)                
             else:
                 outputs = self.model(inputs_embeds=encode_inputs_embeds, output_hidden_states=True)
 
