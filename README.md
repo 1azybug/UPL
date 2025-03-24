@@ -1,8 +1,8 @@
 # 项目上传github
 1. 项目文件夹简称UPL，首先安装python及其需要的包运行以下命令
 ```
-git clone https://github.com/lx-Meteors/More-effective-context-compression-using-compressed-tokens.git
-cd More-effective-context-compression-using-compressed-tokens
+git clone https://github.com/1azybug/UPL.git
+cd UPL
 conda create -n UPL python==3.10.4
 conda activate UPL
 pip install -r requirements.txt
