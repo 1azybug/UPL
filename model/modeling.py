@@ -81,8 +81,15 @@ class CompressLLM(torch.nn.Module):
             inputs['ae_targets'] = inputs['ae_targets'].contiguous().view(-1).to(logits.device)
             ae_loss = self.loss_fct(logits.contiguous().view(-1, self.vocab_size), inputs['ae_targets'])  # [ae]+context[:-1] -> context[:]
             loss_info["ae_loss"] = ae_loss.item()
-            tot_loss += ae_loss
-            tot_task += 1
+
+            if "ae_weight" not in self.task_config:
+                tot_loss += ae_loss
+                tot_task += 1
+            else:
+                # print(f"ae_weight:{self.task_config['ae_weight']}; tot_task:{tot_task}")
+                tot_loss += ae_loss*self.task_config["ae_weight"]
+                tot_task += self.task_config["ae_weight"]
+                # print(f"ae_weight:{self.task_config['ae_weight']}; tot_task:{tot_task}")
         
 #######################################################LM Task################################################################################
 
@@ -109,8 +116,16 @@ class CompressLLM(torch.nn.Module):
             inputs['lm_targets'] = inputs['lm_targets'].contiguous().view(-1).to(logits.device)
             lm_loss = self.loss_fct(logits, inputs['lm_targets'])
             loss_info["lm_loss"] = lm_loss.item()
-            tot_loss += lm_loss
-            tot_task += 1
+
+            if "lm_weight" not in self.task_config:
+                tot_loss += lm_loss
+                tot_task += 1
+            else:
+                # print(f"lm_weight:{self.task_config['lm_weight']}; tot_task:{tot_task}")
+                tot_loss += lm_loss*self.task_config["lm_weight"]
+                tot_task += self.task_config["lm_weight"]           
+                # print(f"lm_weight:{self.task_config['lm_weight']}; tot_task:{tot_task}")
+
 
 ######################################################QA Task####################################################################
         # LM loss
