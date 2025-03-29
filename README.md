@@ -1,4 +1,6 @@
-# 项目上传github
+# 下界实验注意事项
+
+##  此实验为下界实验，需在DPL情况下去验证，"use_pe": false
 1. 项目文件夹简称UPL，首先安装python及其需要的包运行以下命令
 ```
 git clone https://github.com/1azybug/UPL.git
