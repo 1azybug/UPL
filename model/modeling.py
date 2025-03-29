@@ -360,7 +360,7 @@ class CompressLLM(torch.nn.Module):
         return generate_text
 
     def attn_analysis(self, total_length, outputs, chunk_input_ids):
-        save_dir = "/openbayes/home/UPL/experiment/ICAE"
+        save_dir = "your experiment config path"
         os.makedirs(os.path.dirname(save_dir), exist_ok=True)
         if total_length>=510:
             attentions = outputs.attentions
