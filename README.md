@@ -1,4 +1,8 @@
-# 项目上传github
+# 上界实验注意事项
+
+## 此实验为上界实验，需在DPL情况下去验证，"use_pe": false
+
+
 1. 项目文件夹简称UPL，首先安装python及其需要的包运行以下命令
 ```
 git clone https://github.com/1azybug/UPL.git
@@ -88,5 +92,5 @@ cd pretrain
 bash pretrain_script.sh 等待完事即可
 bash sft_script.sh 等待完事即可
 
-最后进入util的evaluate_ood，配一下每个config的路径，测sft结果
+最后进入util的evaluate_ood，配一下每个config的路径，测sft结果 
 ```

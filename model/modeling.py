@@ -172,6 +172,7 @@ class CompressLLM(torch.nn.Module):
 
     def compress(self, inputs):
         bsz, total_length = inputs['input_ids'].size()
+        inputs_embeds_upper_bound = self.model.model.embed_tokens(inputs['input_ids'])
         ######################################应该不需要截断context##########################################
         # inputs['input_ids'] = inputs['input_ids'][:, :total_length - (total_length % self.compress_ratio)]
         # bsz, total_length = inputs['input_ids'].size()
@@ -216,22 +217,22 @@ class CompressLLM(torch.nn.Module):
                 # 将新的 mem_hidden 拼接到 compress_token
                 compress_token_ids = torch.cat((compress_token_ids, mem_position_ids), dim=1)
 
-            if self.task_config["use_pe"]:
-                outputs = self.model(position_ids=encode_position_ids, inputs_embeds=encode_inputs_embeds,
-                                     output_hidden_states=True)
-            else:
-                outputs = self.model(inputs_embeds=encode_inputs_embeds, output_hidden_states=True)
+#             if self.task_config["use_pe"]:
+#                 outputs = self.model(position_ids=encode_position_ids, inputs_embeds=encode_inputs_embeds,
+#                                      output_hidden_states=True)
+#             else:
+#                 outputs = self.model(inputs_embeds=encode_inputs_embeds, output_hidden_states=True)
 
-            hidden_states = outputs.hidden_states[-1]
-            # [B,mem_size,emb_size]
-            mem_hidden = hidden_states[:, -self.mem_size:]
-            # 在第一次循环时初始化 compress_token
-            if compress_token is None:
-                compress_token = mem_hidden
-            else:
-                # 将新的 mem_hidden 拼接到 compress_token
-                compress_token = torch.cat((compress_token, mem_hidden), dim=1)
-        return compress_token_ids, compress_token, end_idx
+#             hidden_states = outputs.hidden_states[-1]
+#             # [B,mem_size,emb_size]
+#             mem_hidden = hidden_states[:, -self.mem_size:]
+#             # 在第一次循环时初始化 compress_token
+#             if compress_token is None:
+#                 compress_token = mem_hidden
+#             else:
+#                 # 将新的 mem_hidden 拼接到 compress_token
+#                 compress_token = torch.cat((compress_token, mem_hidden), dim=1)
+        return compress_token_ids, inputs_embeds_upper_bound, end_idx
 
     def lm_inference(self,inputs,generate_num=1024):
         compress_token_ids, compress_token, end_idx = self.compress(inputs)
