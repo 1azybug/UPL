@@ -106,8 +106,7 @@ def get_examples(model_id, instruction_dataset_repo, samples_num, min_len, max_l
     instruction_dataset_repo_name = instruction_dataset_repo.split('/')[-1]
     train_data_name = f"output/{instruction_dataset_repo_name}_train_"+model_name+f"_{samples_num}samples_instruction.pt"
     eval_data_name = f"output/{instruction_dataset_repo_name}_eval_"+model_name+f"_{samples_num}samples_instruction.pt"
-
-    print(f"in:train_data_name:{train_data_name}")
+    print(f"in:train_data_name:{train_data_name}") 
     if os.path.exists(train_data_name):
         print("loading data...")
         return torch.load(train_data_name), torch.load(eval_data_name)

@@ -33,6 +33,6 @@ python ../util/evaluate_iid.py --work_dir '../experiment/local_experiment/ICAE_L
 
 python instruction_prepare_data.py --work_dir  '../experiment/local_experiment/ICAE_Llama-3.2-1B_UPL_AEweight-0.75'
 CUDA_VISIBLE_DEVICES=0,1,2,3 python ./instruction_trainer.py --work_dir  '../experiment/local_experiment/ICAE_Llama-3.2-1B_UPL_AEweight-0.75' --port 14527
-CUDA_VISIBLE_DEVICES=0,1,2,3 python ./instruction_evaluator.py --work_dir  '../experiment/local_experiment/ICAE_Llama-3.2-1B_UPL_AEweight-0.75' --batch_size 1
+CUDA_VISIBLE_DEVICES=0 python ./instruction_evaluator.py --work_dir  '../experiment/ICAE' --batch_size 1
 python ../util/evaluate_ood.py --work_dir '../experiment/local_experiment/ICAE_Llama-3.2-1B_UPL_AEweight-0.75'
 python ../util/evaluate_iid.py --work_dir '../experiment/local_experiment/ICAE_Llama-3.2-1B_UPL_AEweight-0.75'
