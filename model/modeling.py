@@ -16,7 +16,8 @@ import torch.nn.functional as F
 import math
 import transformers
 from model.lora import LinearLoraLayer
-
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 class CompressLLM(torch.nn.Module):
     def __init__(self, model_id, mem_size, compress_ratio, device_rank, task_config):
@@ -218,10 +219,11 @@ class CompressLLM(torch.nn.Module):
 
             if self.task_config["use_pe"]:
                 outputs = self.model(position_ids=encode_position_ids, inputs_embeds=encode_inputs_embeds,
-                                     output_hidden_states=True)
+                                     output_hidden_states=True,output_attentions=True)
             else:
-                outputs = self.model(inputs_embeds=encode_inputs_embeds, output_hidden_states=True)
+                outputs = self.model(inputs_embeds=encode_inputs_embeds, output_hidden_states=True,output_attentions=True)
 
+            self.attn_analysis(total_length, outputs, chunk_input_ids)
             hidden_states = outputs.hidden_states[-1]
             # [B,mem_size,emb_size]
             mem_hidden = hidden_states[:, -self.mem_size:]
@@ -357,7 +359,37 @@ class CompressLLM(torch.nn.Module):
                 return generate_text
         return generate_text
 
-
+    def attn_analysis(self, total_length, outputs, chunk_input_ids):
+        save_dir = "your experiment config path"
+        os.makedirs(os.path.dirname(save_dir), exist_ok=True)
+        if total_length>=510:
+            attentions = outputs.attentions
+            mem_tokens = [f"[MEM{i}]" for i in range(self.mem_size)]
+            input_text = self.tokenizer.convert_ids_to_tokens(chunk_input_ids.tolist()[0])
+            input_text.extend(mem_tokens)
+            for layer_index in range(len(attentions)):
+                # 选取当前层的注意力权重
+                attention = attentions[layer_index].squeeze(0)  # (num_heads, seq_len, seq_len)
+                # 计算所有注意力头的加和
+                total_attention = attention.sum(dim=0).to(torch.float32).cpu().numpy()  # (seq_len, seq_len)
+                # 绘制综合注意力热力图
+                plt.figure(figsize=(150, 150))
+                sns.heatmap(
+                    total_attention, 
+                    xticklabels=input_text, 
+                    yticklabels=input_text, 
+                    cmap="Reds",  # 由浅粉色到深红色
+                    square=True
+                )
+                # 旋转标签以避免重叠
+                plt.title(f"Summed Attention Map - Layer {layer_index + 1}")
+                # 保存图像到本地
+                file_name = f"attention_layer{layer_index+1}_summed.png"
+                file_path = os.path.join(save_dir, file_name)
+                plt.savefig(file_path, format="png")
+                print(f"Summed Attention map saved at: {file_path}")
+                plt.close()  # 关闭当前图像，释放内存
+            exit()
 def freeze_encoder(model):
     for name, param in model.named_parameters():
         if name == "mem_tokens" or name == "special_tokens":
