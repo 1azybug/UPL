@@ -55,7 +55,6 @@ class CompressLLM(torch.nn.Module):
         loss_info = {}
 
         # context position ids:[1,......,end_idx]
-        compress_token_ids, compress_token, end_idx = self.compress(inputs)
 
 ##########################################################AE Task########################################################################
 
@@ -66,18 +65,18 @@ class CompressLLM(torch.nn.Module):
             # [1,E] -> [1,1,E] -> [B,1,E]
             expand_ae_token = self.special_tokens[0:1].unsqueeze(0).expand(bsz, 1, emb_size)
             # [B,mem_size,E];     [B,1,E];      [B,seq_len-1,E]
-            ae_emb = torch.cat([compress_token, expand_ae_token, inputs_embeds[:, :-1, :]], dim=1)
+            ae_emb = torch.cat([expand_ae_token, inputs_embeds[:, :-1, :]], dim=1)
 
             # ae_pids:[0], ae_target[:, :-1] pids:[1,......,end_idx] because drop the last token to predict [1,...,end_idx+1] the last one is <eos>.
             position_ids = torch.arange(0, inputs_embeds.size(1), device=inputs_embeds.device).unsqueeze(0)
-            ae_position_ids = torch.cat([compress_token_ids, position_ids], dim=1)
+            ae_position_ids = torch.cat([position_ids], dim=1)
             # print(f"ae_position_ids:{ae_position_ids}")
             if self.task_config["use_pe"]:
                 outputs = self.decoder(position_ids=ae_position_ids, inputs_embeds=ae_emb)
             else:
                 outputs = self.decoder(inputs_embeds=ae_emb)
             # [B,mem_size+S,V] -> [B,S,V]
-            logits = outputs.logits[:, compress_token.size(1):]
+            logits = outputs.logits
             inputs['ae_targets'] = inputs['ae_targets'].contiguous().view(-1).to(logits.device)
             ae_loss = self.loss_fct(logits.contiguous().view(-1, self.vocab_size), inputs['ae_targets'])  # [ae]+context[:-1] -> context[:]
             loss_info["ae_loss"] = ae_loss.item()
@@ -99,19 +98,19 @@ class CompressLLM(torch.nn.Module):
             bsz, seq_len, emb_size = lm_target_emb.size()
             # [1,E] -> [1,1,E] -> [B,1,E]
             expand_lm_token = self.special_tokens[1:2].unsqueeze(0).expand(bsz, 1, emb_size)
-            lm_emb = torch.cat([compress_token, expand_lm_token, lm_target_emb],dim=1)
+            lm_emb = torch.cat([expand_lm_token, lm_target_emb],dim=1)
 
             # context pids:[1,......,end_idx] 
             # lm_pids:[end_idx], lm_target_pids:[end_idx+1,......]
             latter_position_ids = torch.arange(end_idx,end_idx+seq_len+1,device=lm_target_emb.device).unsqueeze(0)
-            lm_position_ids = torch.cat([compress_token_ids,latter_position_ids],dim=1)
+            lm_position_ids = torch.cat([latter_position_ids],dim=1)
             # print(f"lm_position_ids:{lm_position_ids}")
             if self.task_config["use_pe"]:
                 outputs = self.decoder(inputs_embeds=lm_emb, position_ids=lm_position_ids)
             else:
                 outputs = self.decoder(inputs_embeds=lm_emb)
             # [B,mem_size+S,V] -> [B,S,V]
-            logits = outputs.logits[:, compress_token.size(1):]
+            logits = outputs.logits
             logits = logits.contiguous().view(-1, self.vocab_size)
             inputs['lm_targets'] = inputs['lm_targets'].contiguous().view(-1).to(logits.device)
             lm_loss = self.loss_fct(logits, inputs['lm_targets'])
@@ -135,18 +134,18 @@ class CompressLLM(torch.nn.Module):
             bsz, seq_len, emb_size = lm_target_emb.size()
             # [1,E] -> [1,1,E] -> [B,1,E]
             expand_lm_token = self.special_tokens[1:2].unsqueeze(0).expand(bsz, 1, emb_size)
-            lm_emb = torch.cat([compress_token, expand_lm_token,lm_target_emb],dim=1)
+            lm_emb = torch.cat([ expand_lm_token,lm_target_emb],dim=1)
             # context position ids:[1,......,end_idx];
             #                                         [LM] position ids:[end_idx];  QA position ids:[end_idx+1,.......]
             latter_position_ids = torch.arange(end_idx,end_idx+seq_len+1,device=lm_target_emb.device).unsqueeze(0)
-            lm_position_ids = torch.cat([compress_token_ids,latter_position_ids],dim=1)
+            lm_position_ids = torch.cat([latter_position_ids],dim=1)
             # print(f"lm_position_ids:{lm_position_ids}")
             if self.task_config["use_pe"]:
                 outputs = self.decoder(inputs_embeds=lm_emb, position_ids=lm_position_ids)
             else:
                 outputs = self.decoder(inputs_embeds=lm_emb)
             # [B,mem_size+S,V] -> [B,S,V]
-            logits = outputs.logits[:,compress_token.size(1):]
+            logits = outputs.logits
 
             #  in prepare_data.py, we drop the fisrt -100, so here we drop the [LM]'s logits which is used to predict the fisrt -100.
             #  but it's no influence because -100 are not used to calculate the loss.
@@ -234,21 +233,20 @@ class CompressLLM(torch.nn.Module):
         return compress_token_ids, compress_token, end_idx
 
     def lm_inference(self,inputs,generate_num=1024):
-        compress_token_ids, compress_token, end_idx = self.compress(inputs)
         lm_target_emb = self.decoder.model.embed_tokens(inputs['lm_targets'])
         bsz, seq_len, emb_size = lm_target_emb.size()
         expand_lm_token = self.special_tokens[1:2].unsqueeze(0).expand(bsz, 1, emb_size)
 
-        lm_emb = torch.cat([compress_token, expand_lm_token, lm_target_emb], dim=1)
+        lm_emb = torch.cat([expand_lm_token, lm_target_emb], dim=1)
         # context position ids:[1,......,end_idx]
         #                                         [LM] position ids:[end_idx];  QA position ids:[end_idx+1,.......] 
-        latter_position_ids = torch.arange(end_idx, end_idx + seq_len + 1, device=lm_target_emb.device).unsqueeze(0)
-        lm_position_ids = torch.cat([compress_token_ids, latter_position_ids], dim=1)
+        # latter_position_ids = torch.arange(end_idx, end_idx + seq_len + 1, device=lm_target_emb.device).unsqueeze(0)
+        # lm_position_ids = torch.cat([latter_position_ids], dim=1)
 
         generate_text = []
         past_key_values = None
         next_inputs_embeds = lm_emb.clone()
-        next_position_ids = lm_position_ids.clone()
+        # next_position_ids = lm_position_ids.clone()
         for i in range(generate_num):
             if self.task_config["use_pe"]:
                 out = self.decoder(position_ids=next_position_ids,
@@ -267,7 +265,7 @@ class CompressLLM(torch.nn.Module):
             # [B]->[B,E]->[B,1,E]
             next_inputs_embeds = self.decoder.model.embed_tokens(next_token_id).unsqueeze(1).to(lm_target_emb.device)  
             # [1, seq_len]/[1,1] -> [1,1]
-            next_position_ids = next_position_ids[:,-1:]+1
+            # next_position_ids = next_position_ids[:,-1:]+1
             generate_text.append(next_token_id.item())
             if next_token_id.item() == self.tokenizer.eos_token_id:
                 return generate_text
@@ -275,17 +273,17 @@ class CompressLLM(torch.nn.Module):
 
 
     def ae_inference(self, inputs):
-        compress_token_ids, compress_token, end_idx = self.compress(inputs)
-        bsz, tot_mem_size, emb_size = compress_token.size()
+        ae_input_emb = self.decoder.model.embed_tokens(inputs["input_ids"])
+        bsz, seq_len, emb_size = ae_input_emb.size()
         # [1,E] -> [1,1,E] -> [B,1,E]
         expand_ae_token = self.special_tokens[0:1].unsqueeze(0).expand(bsz, 1, emb_size)
 
         #                  [B,tot_mem_size,E];   [B,1,E]
-        ae_emb = torch.cat([compress_token, expand_ae_token], dim=1)
+        ae_emb = torch.cat([expand_ae_token], dim=1)
 
         # ae_pid:[0]  shape:[1]->[1,1]->[B,1]
-        position_ids = torch.arange(0, 1, device=compress_token.device).unsqueeze(0).expand(bsz, 1)
-        ae_position_ids = torch.cat([compress_token_ids, position_ids], dim=1)
+        position_ids = torch.arange(0, 1, device=ae_input_emb.device).unsqueeze(0).expand(bsz, 1)
+        ae_position_ids = torch.cat([position_ids], dim=1)
 
         generate_text = []
         past_key_values = None
@@ -304,7 +302,7 @@ class CompressLLM(torch.nn.Module):
             # [B,V]->[B]
             next_token_id = torch.argmax(logit, dim=-1)
             # [B]->[B,E]->[B,1,E]
-            next_inputs_embeds = self.decoder.model.embed_tokens(next_token_id).unsqueeze(1).to(compress_token.device)
+            next_inputs_embeds = self.decoder.model.embed_tokens(next_token_id).unsqueeze(1).to(ae_input_emb.device)
             # next_position_ids:[B,S] -> [B,1]
             next_position_ids = next_position_ids[:,-1:]+1
             generate_text.append(next_token_id.item())
