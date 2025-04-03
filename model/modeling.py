@@ -54,9 +54,7 @@ class CompressLLM(torch.nn.Module):
         tot_task = 0
         loss_info = {}
 
-        # context position ids:[1,......,end_idx]
-
-##########################################################AE Task########################################################################
+##########################################################AE Task############################################################################
 
         if self.task_config["is_pretrain"] and self.task_config["use_ae_loss"]:
             # print("AE Task")
@@ -102,8 +100,8 @@ class CompressLLM(torch.nn.Module):
 
             # context pids:[1,......,end_idx] 
             # lm_pids:[end_idx], lm_target_pids:[end_idx+1,......]
-            latter_position_ids = torch.arange(end_idx,end_idx+seq_len+1,device=lm_target_emb.device).unsqueeze(0)
-            lm_position_ids = torch.cat([latter_position_ids],dim=1)
+            # latter_position_ids = torch.arange(end_idx,end_idx+seq_len+1,device=lm_target_emb.device).unsqueeze(0)
+            # lm_position_ids = torch.cat([latter_position_ids],dim=1)
             # print(f"lm_position_ids:{lm_position_ids}")
             if self.task_config["use_pe"]:
                 outputs = self.decoder(inputs_embeds=lm_emb, position_ids=lm_position_ids)
@@ -135,10 +133,10 @@ class CompressLLM(torch.nn.Module):
             # [1,E] -> [1,1,E] -> [B,1,E]
             expand_lm_token = self.special_tokens[1:2].unsqueeze(0).expand(bsz, 1, emb_size)
             lm_emb = torch.cat([ expand_lm_token,lm_target_emb],dim=1)
-            # context position ids:[1,......,end_idx];
+            # context position ids:[1,......,end_idx]; 
             #                                         [LM] position ids:[end_idx];  QA position ids:[end_idx+1,.......]
-            latter_position_ids = torch.arange(end_idx,end_idx+seq_len+1,device=lm_target_emb.device).unsqueeze(0)
-            lm_position_ids = torch.cat([latter_position_ids],dim=1)
+            # latter_position_ids = torch.arange(end_idx,end_idx+seq_len+1,device=lm_target_emb.device).unsqueeze(0)
+            # lm_position_ids = torch.cat([latter_position_ids],dim=1)
             # print(f"lm_position_ids:{lm_position_ids}")
             if self.task_config["use_pe"]:
                 outputs = self.decoder(inputs_embeds=lm_emb, position_ids=lm_position_ids)
