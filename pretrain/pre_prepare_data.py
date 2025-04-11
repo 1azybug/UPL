@@ -39,7 +39,6 @@ def get_examples(model_id, dataset_repo, samples_num, min_len, max_len, instruct
     model_name = model_id.split('/')[-1]
     train_data_name = f"{output_dir}/train_"+model_name+"_"+str(samples_num)+f"samples_{min_len}-{max_len}len.pt"
     eval_data_name = f"{output_dir}/eval_"+model_name+"_"+str(samples_num)+f"samples_{min_len}-{max_len}len.pt"
-
     if os.path.exists(train_data_name):
         print("loading data...")
         return torch.load(train_data_name), torch.load(eval_data_name)
@@ -58,8 +57,11 @@ def get_examples(model_id, dataset_repo, samples_num, min_len, max_len, instruct
             continue
         if len(ids)>max_len:
             continue
-        # half for prefix, half for LM
-        last_start = len(ids) // 2
+        if len(ids) % min_len == 0:
+            continue
+        # last chunk for LM Task to predict
+        last_start = len(ids) // min_len
+        last_start = last_start * min_len
 
         inputs = [tokenizer.bos_token_id] + ids[:last_start] 
         ae_target = inputs + [tokenizer.eos_token_id]
